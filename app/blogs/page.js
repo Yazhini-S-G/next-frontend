@@ -1,0 +1,151 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import RequireAuth from "@/components/RequireAuth";
+import { api, hasPermission, imageUrl } from "@/lib/api";
+
+export default function BlogsPage() {
+  return (
+    <RequireAuth permission="view_blog">
+      {(user) => <Blogs user={user} />}
+    </RequireAuth>
+  );
+}
+
+function Blogs({ user }) {
+  const [blogs, setBlogs] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [filters, setFilters] = useState({ search: "", status_filter: "", category_id: "" });
+  const [error, setError] = useState("");
+
+  async function load() {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => value && params.set(key, value));
+    const [nextBlogs, nextCategories] = await Promise.all([
+      api(`/blogs${params.toString() ? `?${params}` : ""}`),
+      api("/blogs/categories"),
+    ]);
+    setBlogs(nextBlogs);
+    setCategories(nextCategories);
+  }
+
+  useEffect(() => {
+    load().catch((err) => setError(err.message));
+  }, [filters]);
+
+  async function remove(id) {
+    if (!confirm("Delete this blog?")) return;
+    await api(`/blogs/${id}`, { method: "DELETE" });
+    await load();
+  }
+
+  return (
+    <>
+      <div className="page-title">
+        <div>
+          <h1>Blogs</h1>
+          <p className="muted">Create drafts, upload images, submit for review, and publish when permitted.</p>
+        </div>
+        {hasPermission(user, "create_blog") && <button className="btn primary" onClick={() => setEditing({})}>Create Blog</button>}
+      </div>
+      <div className="toolbar card">
+        <input placeholder="Search" value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} />
+        <select value={filters.status_filter} onChange={(event) => setFilters({ ...filters, status_filter: event.target.value })}>
+          <option value="">All Statuses</option>
+          <option>Draft</option>
+          <option>Pending Review</option>
+          <option>Approved</option>
+          <option>Published</option>
+          <option>Rejected</option>
+        </select>
+        <select value={filters.category_id} onChange={(event) => setFilters({ ...filters, category_id: event.target.value })}>
+          <option value="">All Categories</option>
+          {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+        </select>
+      </div>
+      {error && <div className="empty-state">{error}</div>}
+      <section className="grid blog-grid" style={{ marginTop: 18 }}>
+        {blogs.map((blog) => (
+          <article className="card blog-card" key={blog.id}>
+            {blog.featured_image && <img className="blog-thumb" src={imageUrl(blog.featured_image)} alt="" />}
+            <span className="badge">{blog.status}</span>
+            {blog.is_featured && <span className="badge warning">Featured</span>}
+            <h3>{blog.title}</h3>
+            <p className="muted">{blog.content.replace(/<[^>]+>/g, "").slice(0, 150)}</p>
+            <p className="muted">{blog.category_name || "Uncategorized"} | {blog.tags || "No tags"}</p>
+            <div className="actions">
+              {(hasPermission(user, "edit_blog") || blog.author_id === user.id) && <button className="btn" onClick={() => setEditing(blog)}>Edit</button>}
+              {hasPermission(user, "delete_blog") && <button className="btn danger" onClick={() => remove(blog.id)}>Delete</button>}
+            </div>
+          </article>
+        ))}
+      </section>
+      {!blogs.length && <div className="empty-state">No blogs found.</div>}
+      {editing && <BlogModal blog={editing} categories={categories} user={user} onClose={() => setEditing(null)} onSaved={async () => { setEditing(null); await load(); }} />}
+    </>
+  );
+}
+
+function BlogModal({ blog, categories, user, onClose, onSaved }) {
+  const [preview, setPreview] = useState(blog.featured_image ? imageUrl(blog.featured_image) : "");
+  const [file, setFile] = useState(null);
+  const [error, setError] = useState("");
+  const isEdit = Boolean(blog.id);
+
+  async function uploadIfNeeded() {
+    if (!file) return blog.featured_image || null;
+    const form = new FormData();
+    form.append("file", file);
+    const result = await api("/blogs/upload-image", { method: "POST", body: form });
+    return result.path;
+  }
+
+  async function save(event, action) {
+    event.preventDefault();
+    setError("");
+    const form = new FormData(event.currentTarget.form || event.currentTarget);
+    try {
+      const featured_image = await uploadIfNeeded();
+      const payload = {
+        title: form.get("title"),
+        content: form.get("content"),
+        category_id: form.get("category_id") ? Number(form.get("category_id")) : null,
+        tags: form.get("tags"),
+        featured_image,
+        action,
+      };
+      await api(isEdit ? `/blogs/${blog.id}` : "/blogs", { method: isEdit ? "PUT" : "POST", body: JSON.stringify(payload) });
+      await onSaved();
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  return (
+    <div className="modal">
+      <form className="modal-panel">
+        <div className="page-title">
+          <h1>{isEdit ? "Edit Blog" : "Create Blog"}</h1>
+          <button className="btn ghost" type="button" onClick={onClose}>Cancel</button>
+        </div>
+        <div className="grid two-col">
+          <div>
+            <div className="field"><label>Title</label><input name="title" defaultValue={blog.title || ""} required /></div>
+            <div className="field"><label>Category</label><select name="category_id" defaultValue={blog.category_id || ""}><option value="">Uncategorized</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div>
+            <div className="field"><label>Tags</label><input name="tags" defaultValue={blog.tags || ""} /></div>
+            <div className="field"><label>Featured Image</label><input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => { const nextFile = event.target.files?.[0]; setFile(nextFile || null); if (nextFile) setPreview(URL.createObjectURL(nextFile)); }} /></div>
+            {preview && <img className="blog-thumb" src={preview} alt="" />}
+          </div>
+          <div className="field"><label>Content</label><textarea name="content" defaultValue={blog.content || ""} required /></div>
+        </div>
+        <div className="error">{error}</div>
+        <div className="actions">
+          {hasPermission(user, "save_draft") && <button className="btn" type="button" onClick={(event) => save(event, "draft")}>Save Draft</button>}
+          {hasPermission(user, "submit_for_review") && <button className="btn secondary" type="button" onClick={(event) => save(event, "submit")}>Submit For Review</button>}
+          {hasPermission(user, "publish_blog") && <button className="btn primary" type="button" onClick={(event) => save(event, "publish")}>Publish</button>}
+        </div>
+      </form>
+    </div>
+  );
+}
