@@ -170,13 +170,13 @@ function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved 
                 <div className="field"><label htmlFor="user-confirm-password">Confirm Password</label><PasswordInput id="user-confirm-password" name="confirm_password" minLength={8} required /></div>
               </>
             )}
-            <label className="check"><input name="is_active" type="checkbox" defaultChecked={user.is_active ?? true} /> Account active</label>
+            <label className="check" htmlFor="user-is-active"><input id="user-is-active" name="is_active" type="checkbox" defaultChecked={user.is_active ?? true} /> Account active</label>
           </div>
           <div>
             <h3>Role Selection</h3>
             {canManageRoles ? roles.filter(role => !role.role_name.match(/^(User|Admin) Custom \d+$/)).map((role) => (
-              <label className="check" key={role.id}>
-                <input type="checkbox" checked={selectedRoles.includes(role.id)} onChange={() => toggle(selectedRoles, setSelectedRoles, role.id)} />
+              <label className="check" key={role.id} htmlFor={`role-${role.id}`}>
+                <input id={`role-${role.id}`} type="checkbox" checked={selectedRoles.includes(role.id)} onChange={() => toggle(selectedRoles, setSelectedRoles, role.id)} />
                 {role.role_name}
               </label>
             )) : <p className="muted">Only role managers can assign roles.</p>}
@@ -188,8 +188,8 @@ function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved 
             <div key={group}>
               <b>{group}</b>
               {items.map((permission) => (
-                <label className="check" key={permission.id}>
-                  <input type="checkbox" checked={selectedPermissions.includes(permission.id)} onChange={() => toggle(selectedPermissions, setSelectedPermissions, permission.id)} />
+                <label className="check" key={permission.id} htmlFor={`perm-${permission.id}`}>
+                  <input id={`perm-${permission.id}`} type="checkbox" checked={selectedPermissions.includes(permission.id)} onChange={() => toggle(selectedPermissions, setSelectedPermissions, permission.id)} />
                   {permission.permission_name}
                 </label>
               ))}

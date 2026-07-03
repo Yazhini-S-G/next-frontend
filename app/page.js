@@ -77,8 +77,8 @@ export default function Home() {
         </div>
         {mode === "login" ? (
           <form onSubmit={submitLogin}>
-            <div className="field"><label>Email</label><input name="email" type="email" required /></div>
-            <div className="field"><label>Password</label><PasswordInput name="password" required /></div>
+            <div className="field"><label htmlFor="login-email">Email</label><input id="login-email" name="email" type="email" required /></div>
+            <div className="field"><label htmlFor="login-password">Password</label><PasswordInput id="login-password" name="password" required /></div>
             <div className="error">{error}</div>
             <button className="btn primary" disabled={loading} type="submit">{loading ? "Signing in..." : "Login"}</button>
             <div style={{ textAlign: "right", marginTop: "0.5rem" }}>
@@ -87,10 +87,10 @@ export default function Home() {
           </form>
         ) : (
           <form onSubmit={submitRegister}>
-            <div className="field"><label>Full Name</label><input name="name" required /></div>
-            <div className="field"><label>Email</label><input name="email" type="email" required /></div>
-            <div className="field"><label>Password</label><PasswordInput name="password" minLength={8} required /></div>
-            <div className="field"><label>Confirm Password</label><PasswordInput name="confirm_password" minLength={8} required /></div>
+            <div className="field"><label htmlFor="register-name">Full Name</label><input id="register-name" name="name" required /></div>
+            <div className="field"><label htmlFor="register-email">Email</label><input id="register-email" name="email" type="email" required /></div>
+            <div className="field"><label htmlFor="register-password">Password</label><PasswordInput id="register-password" name="password" minLength={8} required /></div>
+            <div className="field"><label htmlFor="register-confirm-password">Confirm Password</label><PasswordInput id="register-confirm-password" name="confirm_password" minLength={8} required /></div>
             <div className="error">{error}</div>
             <button className="btn primary" disabled={loading} type="submit">{loading ? "Creating..." : "Register"}</button>
           </form>

@@ -236,6 +236,7 @@ function Roles() {
                           <label
                             key={perm.id}
                             className="check"
+                            htmlFor={`perm-checkbox-${perm.id}`}
                             style={{
                               display: "flex",
                               alignItems: "center",
@@ -248,6 +249,7 @@ function Roles() {
                             }}
                           >
                             <input
+                              id={`perm-checkbox-${perm.id}`}
                               type="checkbox"
                               checked={selectedPerms.includes(perm.id)}
                               onChange={() => toggle(perm.id)}
