@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
 import { api } from "@/lib/api";
 import dynamic from "next/dynamic";
@@ -160,3 +161,12 @@ function Dashboard({ user }) {
     </div>
   );
 }
+
+Dashboard.propTypes = {
+  user: PropTypes.shape({
+    name: PropTypes.string,
+    email: PropTypes.string,
+    roles: PropTypes.arrayOf(PropTypes.string),
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  }).isRequired,
+};

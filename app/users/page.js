@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
 import PasswordInput from "@/components/PasswordInput";
 import { api, hasPermission } from "@/lib/api";
@@ -88,6 +89,16 @@ function Users({ currentUser }) {
     </>
   );
 }
+
+Users.propTypes = {
+  currentUser: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+    email: PropTypes.string,
+    roles: PropTypes.arrayOf(PropTypes.string),
+    permissions: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+};
 
 function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved }) {
   const [selectedRoles, setSelectedRoles] = useState(() => roles.filter((role) => user.roles?.includes(role.role_name)).map((role) => role.id));
@@ -197,3 +208,30 @@ function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved 
     </div>
   );
 }
+
+UserModal.propTypes = {
+  user: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+    username: PropTypes.string,
+    email: PropTypes.string,
+    is_active: PropTypes.bool,
+    roles: PropTypes.arrayOf(PropTypes.string),
+    permissions: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+  roles: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      role_name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  permissions: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      permission_name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  canManageRoles: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSaved: PropTypes.func.isRequired,
+};

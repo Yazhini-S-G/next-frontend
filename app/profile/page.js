@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
 import PasswordInput from "@/components/PasswordInput";
 import { api } from "@/lib/api";
@@ -59,3 +60,12 @@ function Profile({ user }) {
     </>
   );
 }
+
+Profile.propTypes = {
+  user: PropTypes.shape({
+    name: PropTypes.string,
+    email: PropTypes.string,
+    roles: PropTypes.arrayOf(PropTypes.string).isRequired,
+    is_active: PropTypes.bool,
+  }).isRequired,
+};

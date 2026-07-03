@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
 import { api, hasPermission, imageUrl } from "@/lib/api";
 
@@ -87,6 +88,16 @@ function Blogs({ user }) {
   );
 }
 
+Blogs.propTypes = {
+  user: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+    email: PropTypes.string,
+    roles: PropTypes.arrayOf(PropTypes.string),
+    permissions: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+};
+
 function BlogModal({ blog, categories, user, onClose, onSaved }) {
   const [preview, setPreview] = useState(blog.featured_image ? imageUrl(blog.featured_image) : "");
   const [file, setFile] = useState(null);
@@ -149,3 +160,32 @@ function BlogModal({ blog, categories, user, onClose, onSaved }) {
     </div>
   );
 }
+
+BlogModal.propTypes = {
+  blog: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    title: PropTypes.string,
+    content: PropTypes.string,
+    category_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    tags: PropTypes.string,
+    featured_image: PropTypes.string,
+    status: PropTypes.string,
+    is_featured: PropTypes.bool,
+    author_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    category_name: PropTypes.string,
+    author_name: PropTypes.string,
+  }).isRequired,
+  categories: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+      name: PropTypes.string.isRequired,
+    })
+  ).isRequired,
+  user: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    permissions: PropTypes.arrayOf(PropTypes.string),
+    roles: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSaved: PropTypes.func.isRequired,
+};

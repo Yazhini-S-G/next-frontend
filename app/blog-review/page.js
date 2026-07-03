@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
 import { api, hasPermission, imageUrl } from "@/lib/api";
 
@@ -75,3 +76,11 @@ function BlogReview({ user }) {
     </>
   );
 }
+
+BlogReview.propTypes = {
+  user: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    permissions: PropTypes.arrayOf(PropTypes.string),
+    roles: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
+};
