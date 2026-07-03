@@ -8,6 +8,12 @@ import Modal from "@/components/Modal";
 import Badge from "@/components/Badge";
 import { api, hasPermission, imageUrl } from "@/lib/api";
 
+const stripHtml = (html) => {
+  if (typeof window === "undefined") return "";
+  const doc = new DOMParser().parseFromString(html || "", "text/html");
+  return doc.body.textContent || "";
+};
+
 export default function BlogsPage() {
   return (
     <RequireAuth permission="view_blog">
@@ -75,7 +81,7 @@ function Blogs({ user }) {
             <Badge>{blog.status}</Badge>
             {blog.is_featured && <Badge variant="warning">Featured</Badge>}
             <h3>{blog.title}</h3>
-            <p className="muted">{blog.content.replace(/<[^>]+>/g, "").slice(0, 150)}</p>
+            <p className="muted">{stripHtml(blog.content).slice(0, 150)}</p>
             <p className="muted">{blog.category_name || "Uncategorized"} | {blog.tags || "No tags"}</p>
             <div className="actions">
               {(hasPermission(user, "edit_blog") || blog.author_id === user.id) && <button className="btn" onClick={() => setEditing(blog)}>Edit</button>}
