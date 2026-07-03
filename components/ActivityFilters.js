@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const MODULES = ["Auth", "Blog Management", "User Management", "Role Management"];
 
@@ -54,10 +55,11 @@ export default function ActivityFilters({ onFilter }) {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "0.75rem", marginBottom: "1rem" }}>
         <div>
-          <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontWeight: 600, color: "#64748b" }}>
+          <label htmlFor="filter-admin-name" style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontWeight: 600, color: "#64748b" }}>
             User Name
           </label>
           <input
+            id="filter-admin-name"
             type="text"
             name="admin_name"
             value={filters.admin_name}
@@ -68,10 +70,11 @@ export default function ActivityFilters({ onFilter }) {
         </div>
 
         <div>
-          <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontWeight: 600, color: "#64748b" }}>
+          <label htmlFor="filter-admin-email" style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontWeight: 600, color: "#64748b" }}>
             Email
           </label>
           <input
+            id="filter-admin-email"
             type="text"
             name="admin_email"
             value={filters.admin_email}
@@ -82,30 +85,31 @@ export default function ActivityFilters({ onFilter }) {
         </div>
 
         <div>
-          <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontWeight: 600, color: "#64748b" }}>
+          <label htmlFor="filter-module" style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontWeight: 600, color: "#64748b" }}>
             Module
           </label>
-          <select name="module" value={filters.module} onChange={handleChange} className="input">
+          <select id="filter-module" name="module" value={filters.module} onChange={handleChange} className="input">
             <option value="">All Modules</option>
             {MODULES.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
         </div>
 
         <div>
-          <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontWeight: 600, color: "#64748b" }}>
+          <label htmlFor="filter-action-type" style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontWeight: 600, color: "#64748b" }}>
             Action Type
           </label>
-          <select name="action_type" value={filters.action_type} onChange={handleChange} className="input">
+          <select id="filter-action-type" name="action_type" value={filters.action_type} onChange={handleChange} className="input">
             <option value="">All Actions</option>
             {ACTION_TYPES.map(a => <option key={a} value={a}>{a}</option>)}
           </select>
         </div>
 
         <div>
-          <label style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontWeight: 600, color: "#64748b" }}>
+          <label htmlFor="filter-date" style={{ display: "block", marginBottom: "0.25rem", fontSize: "0.8rem", fontWeight: 600, color: "#64748b" }}>
             Date
           </label>
           <input
+            id="filter-date"
             type="date"
             name="date"
             value={filters.date}
@@ -137,3 +141,7 @@ export default function ActivityFilters({ onFilter }) {
     </div>
   );
 }
+
+ActivityFilters.propTypes = {
+  onFilter: PropTypes.func.isRequired,
+};

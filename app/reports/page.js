@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
 import { api, getToken } from "@/lib/api";
 
@@ -28,6 +29,17 @@ function StatRow({ label, value, color }) {
     </div>
   );
 }
+
+StatRow.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.number,
+  color: PropTypes.string,
+};
+
+StatRow.defaultProps = {
+  value: 0,
+  color: undefined,
+};
 
 export default function ReportsPage() {
   return (

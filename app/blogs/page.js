@@ -50,8 +50,8 @@ function Blogs({ user }) {
         {hasPermission(user, "create_blog") && <button className="btn primary" onClick={() => setEditing({})}>Create Blog</button>}
       </div>
       <div className="toolbar card">
-        <input placeholder="Search" value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} />
-        <select value={filters.status_filter} onChange={(event) => setFilters({ ...filters, status_filter: event.target.value })}>
+        <input aria-label="Search blogs" placeholder="Search" value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} />
+        <select aria-label="Filter by status" value={filters.status_filter} onChange={(event) => setFilters({ ...filters, status_filter: event.target.value })}>
           <option value="">All Statuses</option>
           <option>Draft</option>
           <option>Pending Review</option>
@@ -59,7 +59,7 @@ function Blogs({ user }) {
           <option>Published</option>
           <option>Rejected</option>
         </select>
-        <select value={filters.category_id} onChange={(event) => setFilters({ ...filters, category_id: event.target.value })}>
+        <select aria-label="Filter by category" value={filters.category_id} onChange={(event) => setFilters({ ...filters, category_id: event.target.value })}>
           <option value="">All Categories</option>
           {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
         </select>
@@ -72,7 +72,7 @@ function Blogs({ user }) {
             <span className="badge">{blog.status}</span>
             {blog.is_featured && <span className="badge warning">Featured</span>}
             <h3>{blog.title}</h3>
-            <p className="muted">{blog.content.replace(/<[^>]+>/g, "").slice(0, 150)}</p>
+            <p className="muted">{blog.content.replace(/<[^>]*>/g, "").slice(0, 150)}</p>
             <p className="muted">{blog.category_name || "Uncategorized"} | {blog.tags || "No tags"}</p>
             <div className="actions">
               {(hasPermission(user, "edit_blog") || blog.author_id === user.id) && <button className="btn" onClick={() => setEditing(blog)}>Edit</button>}
@@ -131,13 +131,13 @@ function BlogModal({ blog, categories, user, onClose, onSaved }) {
         </div>
         <div className="grid two-col">
           <div>
-            <div className="field"><label>Title</label><input name="title" defaultValue={blog.title || ""} required /></div>
-            <div className="field"><label>Category</label><select name="category_id" defaultValue={blog.category_id || ""}><option value="">Uncategorized</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div>
-            <div className="field"><label>Tags</label><input name="tags" defaultValue={blog.tags || ""} /></div>
-            <div className="field"><label>Featured Image</label><input type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => { const nextFile = event.target.files?.[0]; setFile(nextFile || null); if (nextFile) setPreview(URL.createObjectURL(nextFile)); }} /></div>
-            {preview && <img className="blog-thumb" src={preview} alt="" />}
+            <div className="field"><label htmlFor="blog-title">Title</label><input id="blog-title" name="title" defaultValue={blog.title || ""} required /></div>
+            <div className="field"><label htmlFor="blog-category">Category</label><select id="blog-category" name="category_id" defaultValue={blog.category_id || ""}><option value="">Uncategorized</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div>
+            <div className="field"><label htmlFor="blog-tags">Tags</label><input id="blog-tags" name="tags" defaultValue={blog.tags || ""} /></div>
+            <div className="field"><label htmlFor="blog-featured-image">Featured Image</label><input id="blog-featured-image" type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => { const nextFile = event.target.files?.[0]; setFile(nextFile || null); if (nextFile) setPreview(URL.createObjectURL(nextFile)); }} /></div>
+            {preview && <img className="blog-thumb" src={preview} alt="Featured preview" />}
           </div>
-          <div className="field"><label>Content</label><textarea name="content" defaultValue={blog.content || ""} required /></div>
+          <div className="field"><label htmlFor="blog-content">Content</label><textarea id="blog-content" name="content" defaultValue={blog.content || ""} required /></div>
         </div>
         <div className="error">{error}</div>
         <div className="actions">

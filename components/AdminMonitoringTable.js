@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PropTypes from "prop-types";
 
 const ACTION_CONFIG = {
   "Login":                    { color: "#22c55e", bg: "#f0fdf4", icon: "🔐" },
@@ -39,15 +40,6 @@ function getActionStyle(action) {
   return { color: "#64748b", bg: "#f8fafc", icon: "📌" };
 }
 
-function formatTime(isoStr) {
-  if (!isoStr) return "—";
-  const d = new Date(isoStr);
-  return d.toLocaleString(undefined, {
-    year: "numeric", month: "short", day: "numeric",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
-  });
-}
-
 function ActionBadge({ action }) {
   const style = getActionStyle(action);
   return (
@@ -68,6 +60,10 @@ function ActionBadge({ action }) {
     </span>
   );
 }
+
+ActionBadge.propTypes = {
+  action: PropTypes.string.isRequired,
+};
 
 function LogRow({ log }) {
   const [expanded, setExpanded] = useState(false);
@@ -143,6 +139,21 @@ function LogRow({ log }) {
   );
 }
 
+LogRow.propTypes = {
+  log: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+    created_at: PropTypes.string.isRequired,
+    username: PropTypes.string,
+    email: PropTypes.string,
+    module: PropTypes.string,
+    action_type: PropTypes.string.isRequired,
+    description: PropTypes.string,
+    user_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    ip_address: PropTypes.string,
+    status: PropTypes.string,
+  }).isRequired,
+};
+
 export default function AdminMonitoringTable({ logs, loading, page, pages, onPageChange }) {
   if (loading) {
     return (
@@ -200,3 +211,17 @@ export default function AdminMonitoringTable({ logs, loading, page, pages, onPag
     </div>
   );
 }
+
+AdminMonitoringTable.propTypes = {
+  logs: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  })),
+  loading: PropTypes.bool.isRequired,
+  page: PropTypes.number.isRequired,
+  pages: PropTypes.number.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+};
+
+AdminMonitoringTable.defaultProps = {
+  logs: [],
+};

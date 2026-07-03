@@ -49,9 +49,9 @@ function Profile({ user }) {
         </div>
         <form className="card" onSubmit={changePassword}>
           <h2>Change Password</h2>
-          <div className="field"><label>Current Password</label><PasswordInput name="old_password" required /></div>
-          <div className="field"><label>New Password</label><PasswordInput name="new_password" minLength={8} required /></div>
-          <div className="field"><label>Confirm Password</label><PasswordInput name="confirm_password" minLength={8} required /></div>
+          <div className="field"><label htmlFor="old-password">Current Password</label><PasswordInput id="old-password" name="old_password" required /></div>
+          <div className="field"><label htmlFor="new-password">New Password</label><PasswordInput id="new-password" name="new_password" minLength={8} required /></div>
+          <div className="field"><label htmlFor="confirm-password">Confirm Password</label><PasswordInput id="confirm-password" name="confirm_password" minLength={8} required /></div>
           <div className="error">{message}</div>
           <button className="btn primary" type="submit">Change Password</button>
         </form>

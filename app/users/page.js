@@ -153,13 +153,13 @@ function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved 
         </div>
         <div className="grid two-col">
           <div>
-            <div className="field"><label>Full Name</label><input name="name" defaultValue={user.name || ""} required /></div>
-            <div className="field"><label>Username</label><input name="username" defaultValue={user.username || ""} /></div>
-            <div className="field"><label>Email</label><input name="email" type="email" defaultValue={user.email || ""} required /></div>
+            <div className="field"><label htmlFor="user-name">Full Name</label><input id="user-name" name="name" defaultValue={user.name || ""} required /></div>
+            <div className="field"><label htmlFor="user-username">Username</label><input id="user-username" name="username" defaultValue={user.username || ""} /></div>
+            <div className="field"><label htmlFor="user-email">Email</label><input id="user-email" name="email" type="email" defaultValue={user.email || ""} required /></div>
             {!isEdit && (
               <>
-                <div className="field"><label>Password</label><PasswordInput name="password" minLength={8} required /></div>
-                <div className="field"><label>Confirm Password</label><PasswordInput name="confirm_password" minLength={8} required /></div>
+                <div className="field"><label htmlFor="user-password">Password</label><PasswordInput id="user-password" name="password" minLength={8} required /></div>
+                <div className="field"><label htmlFor="user-confirm-password">Confirm Password</label><PasswordInput id="user-confirm-password" name="confirm_password" minLength={8} required /></div>
               </>
             )}
             <label className="check"><input name="is_active" type="checkbox" defaultChecked={user.is_active ?? true} /> Account active</label>

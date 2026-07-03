@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, getToken, hasPermission } from "@/lib/api";
 import Shell from "@/components/Shell";
+import PropTypes from "prop-types";
 
 export default function RequireAuth({ permission, children }) {
   const router = useRouter();
@@ -36,3 +37,12 @@ export default function RequireAuth({ permission, children }) {
 
   return <Shell user={user}>{children(user, setUser)}</Shell>;
 }
+
+RequireAuth.propTypes = {
+  permission: PropTypes.string,
+  children: PropTypes.func.isRequired,
+};
+
+RequireAuth.defaultProps = {
+  permission: undefined,
+};

@@ -114,12 +114,13 @@ function ResetPasswordForm() {
         
         <form onSubmit={submit}>
           <div className="field">
-            <label>New Password</label>
+            <label htmlFor="reset-new-password">New Password</label>
             {/* We capture onChange here to update strength, so we need to pass it to PasswordInput if it supports it, 
                 or just use a wrapper. Since our PasswordInput doesn't pass onChange, we'll implement it inline here 
                 for full control, or we can update PasswordInput. Let's just do it inline here for strength checking. */}
             <div style={{ position: "relative", display: "flex", alignItems: "center", width: "100%" }}>
               <PasswordInput 
+                id="reset-new-password"
                 name="new_password" 
                 minLength={8} 
                 required 
@@ -152,8 +153,9 @@ function ResetPasswordForm() {
           </div>
 
           <div className="field">
-            <label>Confirm Password</label>
+            <label htmlFor="reset-confirm-password">Confirm Password</label>
             <PasswordInput 
+              id="reset-confirm-password"
               name="confirm_password" 
               minLength={8} 
               required 

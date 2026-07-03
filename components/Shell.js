@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { api, clearToken, hasPermission } from "@/lib/api";
+import PropTypes from "prop-types";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", permission: null },
@@ -62,3 +63,16 @@ export default function Shell({ user, children }) {
     </div>
   );
 }
+
+Shell.propTypes = {
+  user: PropTypes.shape({
+    name: PropTypes.string,
+    email: PropTypes.string,
+    roles: PropTypes.arrayOf(PropTypes.string),
+  }),
+  children: PropTypes.node.isRequired,
+};
+
+Shell.defaultProps = {
+  user: null,
+};

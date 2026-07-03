@@ -1,5 +1,7 @@
 "use client";
 
+import PropTypes from "prop-types";
+
 function fmt(isoStr) {
   if (!isoStr) return "—";
   return new Date(isoStr).toLocaleString(undefined, {
@@ -22,6 +24,10 @@ function StatusBadge({ isActive }) {
     </span>
   );
 }
+
+StatusBadge.propTypes = {
+  isActive: PropTypes.bool.isRequired,
+};
 
 function SessionRow({ session }) {
   return (
@@ -50,6 +56,18 @@ function SessionRow({ session }) {
     </tr>
   );
 }
+
+SessionRow.propTypes = {
+  session: PropTypes.shape({
+    admin_name: PropTypes.string,
+    admin_email: PropTypes.string,
+    login_time: PropTypes.string,
+    logout_time: PropTypes.string,
+    session_duration: PropTypes.string,
+    is_active: PropTypes.bool.isRequired,
+    ip_address: PropTypes.string,
+  }).isRequired,
+};
 
 export default function AdminSessionTable({ sessions, loading, page, pages, onPageChange }) {
   if (loading) {
@@ -104,3 +122,17 @@ export default function AdminSessionTable({ sessions, loading, page, pages, onPa
     </div>
   );
 }
+
+AdminSessionTable.propTypes = {
+  sessions: PropTypes.arrayOf(PropTypes.shape({
+    is_active: PropTypes.bool.isRequired,
+  })),
+  loading: PropTypes.bool.isRequired,
+  page: PropTypes.number.isRequired,
+  pages: PropTypes.number.isRequired,
+  onPageChange: PropTypes.func.isRequired,
+};
+
+AdminSessionTable.defaultProps = {
+  sessions: [],
+};

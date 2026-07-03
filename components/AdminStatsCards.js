@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import PropTypes from "prop-types";
 
 const ResponsiveContainer = dynamic(() => import("recharts").then(m => m.ResponsiveContainer), { ssr: false });
 const BarChart = dynamic(() => import("recharts").then(m => m.BarChart), { ssr: false });
@@ -88,3 +89,17 @@ export default function AdminStatsCards({ stats, loading }) {
     </div>
   );
 }
+
+AdminStatsCards.propTypes = {
+  stats: PropTypes.shape({
+    activity_chart_data: PropTypes.arrayOf(PropTypes.shape({
+      date: PropTypes.string,
+      actions: PropTypes.number,
+    })),
+  }),
+  loading: PropTypes.bool.isRequired,
+};
+
+AdminStatsCards.defaultProps = {
+  stats: null,
+};

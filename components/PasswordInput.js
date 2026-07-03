@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import PropTypes from "prop-types";
 
-export default function PasswordInput({ name, placeholder, minLength, required, defaultValue, value, onChange }) {
+export default function PasswordInput({ id, name, placeholder, minLength, required, defaultValue, value, onChange }) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
       <input
+        id={id}
         name={name}
         type={showPassword ? "text" : "password"}
         placeholder={placeholder}
@@ -38,3 +40,24 @@ export default function PasswordInput({ name, placeholder, minLength, required, 
     </div>
   );
 }
+
+PasswordInput.propTypes = {
+  id: PropTypes.string,
+  name: PropTypes.string.isRequired,
+  placeholder: PropTypes.string,
+  minLength: PropTypes.number,
+  required: PropTypes.bool,
+  defaultValue: PropTypes.string,
+  value: PropTypes.string,
+  onChange: PropTypes.func,
+};
+
+PasswordInput.defaultProps = {
+  id: undefined,
+  placeholder: undefined,
+  minLength: undefined,
+  required: false,
+  defaultValue: undefined,
+  value: undefined,
+  onChange: undefined,
+};
