@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
 import { api, getToken } from "@/lib/api";
+import PageHeader from "@/components/PageHeader";
 
 const ResponsiveContainer = dynamic(() => import("recharts").then(m => m.ResponsiveContainer), { ssr: false });
 const BarChart = dynamic(() => import("recharts").then(m => m.BarChart), { ssr: false });
@@ -101,14 +102,9 @@ function Reports() {
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
-        <div>
-          <h2 style={{ margin: 0 }}>System Reports</h2>
-          <p className="muted" style={{ margin: "0.25rem 0 0" }}>Live analytics from PostgreSQL — no placeholders.</p>
-        </div>
+      <PageHeader title="System Reports" description="Live analytics from PostgreSQL — no placeholders.">
         <button className="btn outline" onClick={handleExport}>⬇ Export CSV</button>
-      </div>
+      </PageHeader>
 
       {/* Summary Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>

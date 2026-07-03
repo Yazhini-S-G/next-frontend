@@ -4,6 +4,7 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
 import PasswordInput from "@/components/PasswordInput";
+import PageHeader from "@/components/PageHeader";
 import { api } from "@/lib/api";
 
 export default function ProfilePage() {
@@ -40,7 +41,7 @@ function Profile({ user }) {
 
   return (
     <>
-      <div className="page-title"><h1>Profile</h1></div>
+      <PageHeader title="Profile" />
       <section className="grid two-col">
         <div className="card">
           <p><b>Name:</b> {user.name}</p>

@@ -6,6 +6,7 @@ import ActivityFilters from "@/components/ActivityFilters";
 import AdminStatsCards from "@/components/AdminStatsCards";
 import AdminMonitoringTable from "@/components/AdminMonitoringTable";
 import AdminSessionTable from "@/components/AdminSessionTable";
+import PageHeader from "@/components/PageHeader";
 import { api, getToken } from "@/lib/api";
 
 export default function AdminMonitoringPage() {
@@ -96,10 +97,9 @@ export default function AdminMonitoringPage() {
 
         return (
           <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <h2>Admin Monitoring</h2>
+            <PageHeader title="Admin Monitoring">
               <button className="btn outline" onClick={handleExport}>Export CSV</button>
-            </div>
+            </PageHeader>
 
             <AdminStatsCards stats={stats} loading={loadingStats} />
 

@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
+import PageHeader from "@/components/PageHeader";
+import Modal from "@/components/Modal";
+import Badge from "@/components/Badge";
 import { api, hasPermission, imageUrl } from "@/lib/api";
 
 export default function BlogsPage() {
@@ -43,13 +46,12 @@ function Blogs({ user }) {
 
   return (
     <>
-      <div className="page-title">
-        <div>
-          <h1>Blogs</h1>
-          <p className="muted">Create drafts, upload images, submit for review, and publish when permitted.</p>
-        </div>
+      <PageHeader 
+        title="Blogs" 
+        description="Create drafts, upload images, submit for review, and publish when permitted."
+      >
         {hasPermission(user, "create_blog") && <button className="btn primary" onClick={() => setEditing({})}>Create Blog</button>}
-      </div>
+      </PageHeader>
       <div className="toolbar card">
         <input aria-label="Search blogs" placeholder="Search" value={filters.search} onChange={(event) => setFilters({ ...filters, search: event.target.value })} />
         <select aria-label="Filter by status" value={filters.status_filter} onChange={(event) => setFilters({ ...filters, status_filter: event.target.value })}>
@@ -70,8 +72,8 @@ function Blogs({ user }) {
         {blogs.map((blog) => (
           <article className="card blog-card" key={blog.id}>
             {blog.featured_image && <img className="blog-thumb" src={imageUrl(blog.featured_image)} alt="" />}
-            <span className="badge">{blog.status}</span>
-            {blog.is_featured && <span className="badge warning">Featured</span>}
+            <Badge>{blog.status}</Badge>
+            {blog.is_featured && <Badge variant="warning">Featured</Badge>}
             <h3>{blog.title}</h3>
             <p className="muted">{blog.content.replace(/<[^>]*>/g, "").slice(0, 150)}</p>
             <p className="muted">{blog.category_name || "Uncategorized"} | {blog.tags || "No tags"}</p>
@@ -134,12 +136,7 @@ function BlogModal({ blog, categories, user, onClose, onSaved }) {
   }
 
   return (
-    <div className="modal">
-      <form className="modal-panel">
-        <div className="page-title">
-          <h1>{isEdit ? "Edit Blog" : "Create Blog"}</h1>
-          <button className="btn ghost" type="button" onClick={onClose}>Cancel</button>
-        </div>
+    <Modal title={isEdit ? "Edit Blog" : "Create Blog"} onClose={onClose}>
         <div className="grid two-col">
           <div>
             <div className="field"><label htmlFor="blog-title">Title</label><input id="blog-title" name="title" defaultValue={blog.title || ""} required /></div>
@@ -156,8 +153,7 @@ function BlogModal({ blog, categories, user, onClose, onSaved }) {
           {hasPermission(user, "submit_for_review") && <button className="btn secondary" type="button" onClick={(event) => save(event, "submit")}>Submit For Review</button>}
           {hasPermission(user, "publish_blog") && <button className="btn primary" type="button" onClick={(event) => save(event, "publish")}>Publish</button>}
         </div>
-      </form>
-    </div>
+    </Modal>
   );
 }
 

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import PropTypes from "prop-types";
+import Pagination from "./Pagination";
+import EmptyState from "./EmptyState";
 
 const ACTION_CONFIG = {
   "Login":                    { color: "#22c55e", bg: "#f0fdf4", icon: "🔐" },
@@ -73,6 +75,14 @@ function LogRow({ log }) {
     <>
       <tr
         onClick={() => setExpanded(e => !e)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpanded(prev => !prev);
+          }
+        }}
+        tabIndex={0}
+        role="button"
         style={{ borderBottom: "1px solid #f1f5f9", cursor: "pointer", transition: "background 0.1s" }}
         onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
         onMouseLeave={e => e.currentTarget.style.background = ""}
@@ -166,11 +176,11 @@ export default function AdminMonitoringTable({ logs, loading, page, pages, onPag
 
   if (!logs || logs.length === 0) {
     return (
-      <div className="card" style={{ padding: "3rem", textAlign: "center", color: "#64748b" }}>
-        <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📋</div>
-        <div style={{ fontWeight: 600, marginBottom: "0.25rem" }}>No activity logs found</div>
-        <div style={{ fontSize: "0.85rem" }}>Try clearing your filters, or perform some actions to generate logs.</div>
-      </div>
+      <EmptyState
+        icon="📋"
+        title="No activity logs found"
+        description="Try clearing your filters, or perform some actions to generate logs."
+      />
     );
   }
 
@@ -201,13 +211,7 @@ export default function AdminMonitoringTable({ logs, loading, page, pages, onPag
         </table>
       </div>
 
-      {pages > 1 && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem", borderTop: "1px solid #f1f5f9" }}>
-          <button className="btn outline" onClick={() => onPageChange(page - 1)} disabled={page <= 1}>← Previous</button>
-          <span style={{ color: "#64748b", fontSize: "0.9rem" }}>Page {page} of {pages}</span>
-          <button className="btn outline" onClick={() => onPageChange(page + 1)} disabled={page >= pages}>Next →</button>
-        </div>
-      )}
+      <Pagination page={page} pages={pages} onPageChange={onPageChange} />
     </div>
   );
 }

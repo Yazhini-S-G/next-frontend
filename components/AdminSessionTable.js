@@ -1,6 +1,8 @@
 "use client";
 
 import PropTypes from "prop-types";
+import Pagination from "./Pagination";
+import EmptyState from "./EmptyState";
 
 function fmt(isoStr) {
   if (!isoStr) return "—";
@@ -81,11 +83,11 @@ export default function AdminSessionTable({ sessions, loading, page, pages, onPa
 
   if (!sessions || sessions.length === 0) {
     return (
-      <div className="card" style={{ padding: "3rem", textAlign: "center", color: "#64748b" }}>
-        <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🪑</div>
-        <div style={{ fontWeight: 600 }}>No sessions found</div>
-        <div style={{ fontSize: "0.85rem", marginTop: "0.25rem" }}>Sessions are recorded when users log in and out.</div>
-      </div>
+      <EmptyState
+        icon="🪑"
+        title="No sessions found"
+        description="Sessions are recorded when users log in and out."
+      />
     );
   }
 
@@ -112,13 +114,7 @@ export default function AdminSessionTable({ sessions, loading, page, pages, onPa
         </table>
       </div>
 
-      {pages > 1 && (
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem", borderTop: "1px solid #f1f5f9" }}>
-          <button className="btn outline" onClick={() => onPageChange(page - 1)} disabled={page <= 1}>← Previous</button>
-          <span style={{ color: "#64748b", fontSize: "0.9rem" }}>Page {page} of {pages}</span>
-          <button className="btn outline" onClick={() => onPageChange(page + 1)} disabled={page >= pages}>Next →</button>
-        </div>
-      )}
+      <Pagination page={page} pages={pages} onPageChange={onPageChange} />
     </div>
   );
 }

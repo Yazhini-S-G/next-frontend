@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import RequireAuth from "@/components/RequireAuth";
+import EmptyState from "@/components/EmptyState";
+import PageHeader from "@/components/PageHeader";
 import { api } from "@/lib/api";
 
 const PERMISSION_GROUPS = {
@@ -116,11 +118,10 @@ function Roles() {
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       {/* Header */}
-      <div className="page-title" style={{ marginBottom: "2rem" }}>
-        <div>
-          <h1>Roles &amp; Permissions</h1>
-          <p className="muted">Select a role and configure its permissions. Changes are saved to the database.</p>
-        </div>
+      <PageHeader
+        title="Roles & Permissions"
+        description="Select a role and configure its permissions. Changes are saved to the database."
+      >
         <button
           className="btn primary"
           onClick={save}
@@ -129,7 +130,7 @@ function Roles() {
         >
           {saving ? "Saving..." : "💾 Save Permissions"}
         </button>
-      </div>
+      </PageHeader>
 
       {message.text && (
         <div style={{
@@ -155,7 +156,15 @@ function Roles() {
             return (
               <div
                 key={role.id}
+                role="button"
+                tabIndex={0}
                 onClick={() => selectRole(role)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectRole(role);
+                  }
+                }}
                 style={{
                   padding: "1rem 1.25rem",
                   marginBottom: "0.75rem",
@@ -260,10 +269,10 @@ function Roles() {
               </div>
             </>
           ) : (
-            <div className="card" style={{ padding: "3rem", textAlign: "center", color: "#94a3b8" }}>
-              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>🛡️</div>
-              Select a role from the left panel to manage its permissions.
-            </div>
+            <EmptyState
+              icon="🛡️"
+              description="Select a role from the left panel to manage its permissions."
+            />
           )}
         </div>
       </div>

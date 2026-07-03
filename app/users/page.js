@@ -3,7 +3,10 @@
 import { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
+import PageHeader from "@/components/PageHeader";
 import PasswordInput from "@/components/PasswordInput";
+import Modal from "@/components/Modal";
+import Badge from "@/components/Badge";
 import { api, hasPermission } from "@/lib/api";
 
 export default function UsersPage() {
@@ -45,13 +48,12 @@ function Users({ currentUser }) {
 
   return (
     <>
-      <div className="page-title">
-        <div>
-          <h1>User Management</h1>
-          <p className="muted">Create users, assign roles, grant permissions, and control account status.</p>
-        </div>
+      <PageHeader 
+        title="User Management" 
+        description="Create users, assign roles, grant permissions, and control account status."
+      >
         {hasPermission(currentUser, "create_user") && <button className="btn primary" onClick={() => setEditing({})}>Create User</button>}
-      </div>
+      </PageHeader>
       {error && <div className="empty-state">{error}</div>}
       <div className="table-card">
         <table>
@@ -63,7 +65,7 @@ function Users({ currentUser }) {
                 <td>{user.username}</td>
                 <td>{user.email}</td>
                 <td>{user.roles.filter(role => !role.match(/^(User|Admin) Custom \d+$/)).map((role) => <span className="role-badge" key={role}>{role}</span>)}</td>
-                <td><span className={user.is_active ? "badge success" : "badge danger"}>{user.is_active ? "Active" : "Inactive"}</span></td>
+                <td><Badge variant={user.is_active ? "success" : "danger"}>{user.is_active ? "Active" : "Inactive"}</Badge></td>
                 <td className="actions">
                   {hasPermission(currentUser, "edit_user") && <button className="btn" onClick={() => setEditing(user)}>Edit</button>}
                   {hasPermission(currentUser, "delete_user") && user.id !== currentUser.id && <button className="btn danger" onClick={() => removeUser(user.id)}>Delete</button>}
@@ -156,12 +158,7 @@ function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved 
   }
 
   return (
-    <div className="modal">
-      <form className="modal-panel" onSubmit={submit}>
-        <div className="page-title">
-          <h1>{isEdit ? "Edit User" : "Create User"}</h1>
-          <button className="btn ghost" type="button" onClick={onClose}>Cancel</button>
-        </div>
+    <Modal title={isEdit ? "Edit User" : "Create User"} onClose={onClose} onSubmit={submit}>
         <div className="grid two-col">
           <div>
             <div className="field"><label htmlFor="user-name">Full Name</label><input id="user-name" name="name" defaultValue={user.name || ""} required /></div>
@@ -204,8 +201,7 @@ function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved 
           <button className="btn primary" type="submit">Save User</button>
           <button className="btn ghost" type="button" onClick={onClose}>Cancel</button>
         </div>
-      </form>
-    </div>
+    </Modal>
   );
 }
 

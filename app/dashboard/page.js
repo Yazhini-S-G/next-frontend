@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
+import PageHeader from "@/components/PageHeader";
 import { api } from "@/lib/api";
 import dynamic from "next/dynamic";
 
@@ -88,12 +89,10 @@ function Dashboard({ user }) {
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-      <div className="page-title">
-        <div>
-          <h1>Welcome, {user.name} 👋</h1>
-          <p className="muted">Your personal blog dashboard — real data, no placeholders.</p>
-        </div>
-      </div>
+      <PageHeader 
+        title={<>Welcome, {user.name} 👋</>} 
+        description="Your personal blog dashboard — real data, no placeholders." 
+      />
 
       {/* Stat Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(155px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>

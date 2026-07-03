@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
+import PageHeader from "@/components/PageHeader";
+import Badge from "@/components/Badge";
 import { api, hasPermission, imageUrl } from "@/lib/api";
 
 export default function BlogReviewPage() {
@@ -48,18 +50,16 @@ function BlogReview({ user }) {
 
   return (
     <>
-      <div className="page-title">
-        <div>
-          <h1>Blog Review</h1>
-          <p className="muted">Approve, reject, publish, and feature submitted blogs according to permissions.</p>
-        </div>
-      </div>
+      <PageHeader 
+        title="Blog Review" 
+        description="Approve, reject, publish, and feature submitted blogs according to permissions." 
+      />
       {error && <div className="empty-state">{error}</div>}
       <section className="grid blog-grid">
         {blogs.map((blog) => (
           <article className="card blog-card" key={blog.id}>
             {blog.featured_image && <img className="blog-thumb" src={imageUrl(blog.featured_image)} alt="" />}
-            <span className="badge warning">{blog.status}</span>
+            <Badge variant="warning">{blog.status}</Badge>
             <h3>{blog.title}</h3>
             <p className="muted">By {blog.author_name}</p>
             <p>{blog.content.slice(0, 180)}</p>
