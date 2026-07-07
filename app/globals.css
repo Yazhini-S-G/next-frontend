@@ -3,7 +3,7 @@
   --panel: #ffffff;
   --panel-2: #eef4f8;
   --text: #17202a;
-  --muted: #65758b;
+  --muted: #475569;
   --line: #d8e1ea;
   --accent: #0f766e;
   --accent-2: #2563eb;
@@ -159,7 +159,7 @@ textarea {
 }
 
 .nav-link {
-  color: #d7e4ef;
+  color: #e2e8f0;
   text-decoration: none;
   border-radius: 6px;
   padding: 10px 12px;
@@ -369,3 +369,4 @@ th {
     grid-template-columns: 1fr;
   }
 }
+

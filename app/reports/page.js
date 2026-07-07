@@ -42,6 +42,10 @@ StatRow.defaultProps = {
   color: undefined,
 };
 
+function chartEmpty(message) {
+  return <p className="muted" style={{ textAlign: "center", padding: "3rem 0" }}>{message}</p>;
+}
+
 export default function ReportsPage() {
   return (
     <RequireAuth permission="view_reports">
@@ -84,7 +88,11 @@ function Reports() {
       `${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/activity-logs/export`,
       { headers: { Authorization: `Bearer ${getToken()}` } }
     );
-    if (!res.ok) { alert("Export failed"); return; }
+    if (!res.ok) {
+      alert("Export failed");
+      return;
+    }
+
     const blob = await res.blob();
     const a = Object.assign(document.createElement("a"), {
       href: URL.createObjectURL(blob),
@@ -100,13 +108,64 @@ function Reports() {
   const bs = summary?.blog_statistics || {};
   const as = summary?.activity_statistics || {};
 
+  let blogChart = null;
+  if (mounted && charts?.blog_growth?.length > 0) {
+    blogChart = (
+      <ResponsiveContainer width="100%" height={200}>
+        <BarChart data={charts.blog_growth}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="name" fontSize={11} />
+          <YAxis allowDecimals={false} fontSize={11} />
+          <Tooltip />
+          <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} name="Blogs Created" />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  } else if (mounted) {
+    blogChart = chartEmpty("No data yet.");
+  }
+
+  let userChart = null;
+  if (mounted && charts?.user_growth?.length > 0) {
+    userChart = (
+      <ResponsiveContainer width="100%" height={200}>
+        <LineChart data={charts.user_growth}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} />
+          <XAxis dataKey="name" fontSize={11} />
+          <YAxis allowDecimals={false} fontSize={11} />
+          <Tooltip />
+          <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} name="Users Created" />
+        </LineChart>
+      </ResponsiveContainer>
+    );
+  } else if (mounted) {
+    userChart = chartEmpty("No data yet.");
+  }
+
+  let roleChart = null;
+  if (mounted && charts?.role_distribution?.length > 0) {
+    roleChart = (
+      <ResponsiveContainer width="100%" height={200}>
+        <PieChart>
+          <Pie data={charts.role_distribution} cx="50%" cy="50%" outerRadius={75} dataKey="count" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+            {charts.role_distribution.map((_, index) => (
+              <Cell key={`${charts.role_distribution[index].name}-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip />
+        </PieChart>
+      </ResponsiveContainer>
+    );
+  } else if (mounted) {
+    roleChart = chartEmpty("No data yet.");
+  }
+
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
       <PageHeader title="System Reports" description="Live analytics from PostgreSQL — no placeholders.">
         <button className="btn outline" onClick={handleExport}>⬇ Export CSV</button>
       </PageHeader>
 
-      {/* Summary Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>
         <div className="card" style={{ padding: "1.5rem" }}>
           <h3 style={{ marginBottom: "0.75rem", borderBottom: "2px solid #e2e8f0", paddingBottom: "0.5rem" }}>👤 Users</h3>
@@ -134,92 +193,59 @@ function Reports() {
         </div>
       </div>
 
-      {/* Charts */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(460px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>
         <div className="card" style={{ padding: "1.5rem" }}>
           <h3 style={{ marginBottom: "1rem" }}>📊 Blog Activity (Last 7 Days)</h3>
-          {mounted && charts?.blog_growth?.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={charts.blog_growth}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" fontSize={11} />
-                <YAxis allowDecimals={false} fontSize={11} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} name="Blogs Created" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : !mounted ? null : <p className="muted" style={{ textAlign: "center", padding: "3rem 0" }}>No data yet.</p>}
+          {blogChart}
         </div>
 
         <div className="card" style={{ padding: "1.5rem" }}>
           <h3 style={{ marginBottom: "1rem" }}>📈 User Growth (By Month)</h3>
-          {mounted && charts?.user_growth?.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={charts.user_growth}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" fontSize={11} />
-                <YAxis allowDecimals={false} fontSize={11} />
-                <Tooltip />
-                <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} name="Users Created" />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : !mounted ? null : <p className="muted" style={{ textAlign: "center", padding: "3rem 0" }}>No data yet.</p>}
+          {userChart}
         </div>
 
         <div className="card" style={{ padding: "1.5rem" }}>
           <h3 style={{ marginBottom: "1rem" }}>🛡️ Role Distribution</h3>
-          {mounted && charts?.role_distribution?.length > 0 ? (
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie data={charts.role_distribution} cx="50%" cy="50%" outerRadius={75}
-                  dataKey="count" nameKey="name"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                >
-                  {charts.role_distribution.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          ) : !mounted ? null : <p className="muted" style={{ textAlign: "center", padding: "3rem 0" }}>No data yet.</p>}
+          {roleChart}
         </div>
 
-        {/* Most Active Users */}
         <div className="card" style={{ padding: "1.5rem" }}>
           <h3 style={{ marginBottom: "1rem" }}>🏆 Most Active Users (This Month)</h3>
           {charts?.top_users?.length > 0 ? (
-            charts.top_users.map((u, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid #f1f5f9" }}>
+            charts.top_users.map((user, index) => (
+              <div key={`${user.username}-${index}`} style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid #f1f5f9" }}>
                 <span style={{ fontSize: "0.9rem" }}>
-                  <span style={{ color: "#f59e0b", fontWeight: 700, marginRight: "0.5rem" }}>#{i + 1}</span>
-                  {u.username}
+                  <span style={{ color: "#f59e0b", fontWeight: 700, marginRight: "0.5rem" }}>#{index + 1}</span>
+                  {user.username}
                 </span>
-                <span style={{ fontWeight: 700, color: "#3b82f6" }}>{u.actions} actions</span>
+                <span style={{ fontWeight: 700, color: "#3b82f6" }}>{user.actions} actions</span>
               </div>
             ))
-          ) : <p className="muted" style={{ textAlign: "center", padding: "2rem 0" }}>No activity this month.</p>}
+          ) : (
+            <p className="muted" style={{ textAlign: "center", padding: "2rem 0" }}>No activity this month.</p>
+          )}
         </div>
       </div>
 
-      {/* Recent Activity */}
       <div className="card" style={{ padding: "1.5rem" }}>
         <h3 style={{ marginBottom: "1rem" }}>🕐 Recent System Activity</h3>
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
           {recent.length === 0 ? (
             <p className="muted" style={{ textAlign: "center", padding: "2rem 0" }}>No recent activity.</p>
-          ) : recent.map((item, i) => (
-            <div key={i} style={{ padding: "0.65rem 0", borderBottom: "1px solid #f1f5f9" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.2rem" }}>
-                <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>{item.username}</span>
-                <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{new Date(item.timestamp).toLocaleString()}</span>
+          ) : (
+            recent.map((item, index) => (
+              <div key={`${item.timestamp}-${index}`} style={{ padding: "0.65rem 0", borderBottom: "1px solid #f1f5f9" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.2rem" }}>
+                  <span style={{ fontWeight: 600, fontSize: "0.85rem" }}>{item.username}</span>
+                  <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>{new Date(item.timestamp).toLocaleString()}</span>
+                </div>
+                <div style={{ fontSize: "0.82rem" }}>
+                  <span style={{ color: "#3b82f6", fontWeight: 700 }}>[{item.action}]</span>{" "}
+                  <span style={{ color: "#475569" }}>{item.description}</span>
+                </div>
               </div>
-              <div style={{ fontSize: "0.82rem" }}>
-                <span style={{ color: "#3b82f6", fontWeight: 700 }}>[{item.action}]</span>{" "}
-                <span style={{ color: "#475569" }}>{item.description}</span>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>

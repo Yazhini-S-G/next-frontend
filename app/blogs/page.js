@@ -9,7 +9,7 @@ import Badge from "@/components/Badge";
 import { api, hasPermission, imageUrl } from "@/lib/api";
 
 const stripHtml = (html) => {
-  if (typeof window === "undefined") return "";
+  if (typeof globalThis.window === "undefined") return "";
   const doc = new DOMParser().parseFromString(html || "", "text/html");
   return doc.body.textContent || "";
 };
@@ -33,7 +33,7 @@ function Blogs({ user }) {
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => value && params.set(key, value));
     const [nextBlogs, nextCategories] = await Promise.all([
-      api(`/blogs${params.toString() ? `?${params}` : ""}`),
+      api("/blogs" + (params.toString() ? "?" + params.toString() : "")),
       api("/blogs/categories"),
     ]);
     setBlogs(nextBlogs);
@@ -90,7 +90,7 @@ function Blogs({ user }) {
           </article>
         ))}
       </section>
-      {!blogs.length && <div className="empty-state">No blogs found.</div>}
+      {blogs.length === 0 && <div className="empty-state">No blogs found.</div>}
       {editing && <BlogModal blog={editing} categories={categories} user={user} onClose={() => setEditing(null)} onSaved={async () => { setEditing(null); await load(); }} />}
     </>
   );
@@ -191,3 +191,5 @@ BlogModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSaved: PropTypes.func.isRequired,
 };
+
+

@@ -17,10 +17,10 @@ const PERMISSION_GROUPS = {
 };
 
 const GROUP_ICONS = {
-  "User Management":  "👤",
-  "Blog Management":  "📝",
-  "Reports":          "📊",
-  "Monitoring":       "🔍",
+  "User Management":  "ÃƒÂ°Ã…Â¸Ã¢â‚¬ËœÃ‚Â¤",
+  "Blog Management":  "ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã‚Â",
+  "Reports":          "ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…Â ",
+  "Monitoring":       "ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â",
 };
 
 export default function RolesPage() {
@@ -44,7 +44,6 @@ function Roles() {
       api("/rbac/roles"),
       api("/rbac/permissions"),
     ]);
-    // Filter out auto-generated custom roles
     const coreRoles = nextRoles.filter(
       r => !r.role_name.match(/^(User|Admin) Custom \d+$/)
     );
@@ -97,10 +96,10 @@ function Roles() {
         method: "PUT",
         body: JSON.stringify({ permission_ids: selectedPerms }),
       });
-      setMessage({ text: "✅ Permissions saved successfully.", type: "success" });
+      setMessage({ text: "ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ Permissions saved successfully.", type: "success" });
       await load();
     } catch (err) {
-      setMessage({ text: `❌ ${err.message}`, type: "error" });
+      setMessage({ text: `ÃƒÂ¢Ã‚ÂÃ…â€™ ${err.message}`, type: "error" });
     } finally {
       setSaving(false);
     }
@@ -108,7 +107,6 @@ function Roles() {
 
   const selectedRole = roles.find(r => r.id === selectedRoleId);
 
-  // Build lookup: permission_name → permission object
   const permByName = useMemo(() => {
     const map = {};
     permissions.forEach(p => { map[p.permission_name] = p; });
@@ -117,7 +115,6 @@ function Roles() {
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-      {/* Header */}
       <PageHeader
         title="Roles & Permissions"
         description="Select a role and configure its permissions. Changes are saved to the database."
@@ -128,7 +125,7 @@ function Roles() {
           disabled={!selectedRoleId || saving}
           style={{ minWidth: 150 }}
         >
-          {saving ? "Saving..." : "💾 Save Permissions"}
+          {saving ? "Saving..." : "ÃƒÂ°Ã…Â¸Ã¢â‚¬â„¢Ã‚Â¾ Save Permissions"}
         </button>
       </PageHeader>
 
@@ -147,17 +144,14 @@ function Roles() {
       )}
 
       <div style={{ display: "grid", gridTemplateColumns: "240px 1fr", gap: "1.5rem" }}>
-
-        {/* Role selector (left panel) */}
         <div>
           {roles.map(role => {
             const isSelected = role.id === selectedRoleId;
             const permCount = role.permissions.length;
             return (
-              <div
+              <button
                 key={role.id}
-                role="button"
-                tabIndex={0}
+                type="button"
                 onClick={() => selectRole(role)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -173,6 +167,8 @@ function Roles() {
                   background: isSelected ? "#eff6ff" : "#fff",
                   cursor: "pointer",
                   transition: "all 0.15s",
+                  width: "100%",
+                  textAlign: "left",
                 }}
               >
                 <div style={{ fontWeight: 700, color: isSelected ? "#1d4ed8" : "#0f172a", marginBottom: "0.25rem" }}>
@@ -186,12 +182,11 @@ function Roles() {
                     {role.description}
                   </div>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>
 
-        {/* Permission panels (right) */}
         <div>
           {selectedRole ? (
             <>
@@ -212,11 +207,9 @@ function Roles() {
                   if (groupPerms.length === 0) return null;
                   const groupIds = groupPerms.map(p => p.id);
                   const allChecked = groupIds.every(id => selectedPerms.includes(id));
-                  const someChecked = groupIds.some(id => selectedPerms.includes(id));
 
                   return (
                     <div key={group} className="card" style={{ padding: "1.25rem" }}>
-                      {/* Group header with select-all */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem" }}>
                         <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>
                           {GROUP_ICONS[group]} {group}
@@ -230,7 +223,6 @@ function Roles() {
                         </button>
                       </div>
 
-                      {/* Permission checkboxes */}
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                         {groupPerms.map(perm => (
                           <label
@@ -272,7 +264,7 @@ function Roles() {
             </>
           ) : (
             <EmptyState
-              icon="🛡️"
+              icon="ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂºÃ‚Â¡ÃƒÂ¯Ã‚Â¸Ã‚Â"
               description="Select a role from the left panel to manage its permissions."
             />
           )}

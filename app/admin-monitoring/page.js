@@ -78,7 +78,7 @@ export default function AdminMonitoringPage() {
       });
       if (!res.ok) throw new Error("Failed to export logs");
       const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
+      const url = globalThis.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
       a.download = `admin_monitoring_${new Date().toISOString().split("T")[0]}.csv`;
@@ -146,3 +146,4 @@ export default function AdminMonitoringPage() {
     </RequireAuth>
   );
 }
+
