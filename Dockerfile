@@ -3,10 +3,7 @@ FROM node:22-alpine
 WORKDIR /app
 
 # Create a non-root user and group
-RUN addgroup -g 10001 -S appgroup && adduser -u 10001 -S appuser -G appgroup
-
-# Set proper ownership for the application directory
-RUN chown -R appuser:appgroup /app
+RUN addgroup -g 10001 -S appgroup && adduser -u 10001 -S appuser -G appgroup && chown -R appuser:appgroup /app
 
 # Copy package.json and package-lock.json with correct ownership
 COPY --chown=appuser:appgroup package*.json ./

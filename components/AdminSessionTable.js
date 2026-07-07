@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import PropTypes from "prop-types";
 import Pagination from "./Pagination";
 import EmptyState from "./EmptyState";
