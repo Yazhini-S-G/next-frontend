@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import PropTypes from "prop-types";
 import Pagination from "./Pagination";
 import EmptyState from "./EmptyState";
@@ -32,8 +33,10 @@ StatusBadge.propTypes = {
 };
 
 function SessionRow({ session }) {
+  const sessionKey = `${session.admin_email || session.admin_name || "session"}-${session.login_time || session.logout_time || session.ip_address || "active"}`;
+
   return (
-    <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
+    <tr key={sessionKey} style={{ borderBottom: "1px solid #f1f5f9" }}>
       <td style={{ padding: "0.85rem 1rem" }}>
         <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{session.admin_name}</div>
         {session.admin_email && (
@@ -97,19 +100,22 @@ export default function AdminSessionTable({ sessions, loading, page, pages, onPa
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
           <thead>
             <tr style={{ background: "#f8fafc", borderBottom: "2px solid #f1f5f9" }}>
-              {["User", "Login Time", "Logout Time", "Duration", "Status", "IP Address"].map(h => (
-                <th key={h} style={{
-                  padding: "0.9rem 1rem", textAlign: "left",
-                  fontSize: "0.75rem", fontWeight: 700,
-                  textTransform: "uppercase", letterSpacing: "0.05em", color: "#94a3b8",
-                }}>
-                  {h}
+              {["User", "Login Time", "Logout Time", "Duration", "Status", "IP Address"].map((heading) => (
+                <th
+                  key={heading}
+                  style={{
+                    padding: "0.9rem 1rem", textAlign: "left",
+                    fontSize: "0.75rem", fontWeight: 700,
+                    textTransform: "uppercase", letterSpacing: "0.05em", color: "#94a3b8",
+                  }}
+                >
+                  {heading}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {sessions.map((s, i) => <SessionRow key={i} session={s} />)}
+            {sessions.map((session) => <SessionRow key={`${session.admin_email || session.admin_name || "session"}-${session.login_time || session.logout_time || session.ip_address || "active"}`} session={session} />)}
           </tbody>
         </table>
       </div>

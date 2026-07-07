@@ -9,6 +9,53 @@ import Modal from "@/components/Modal";
 import Badge from "@/components/Badge";
 import { api, hasPermission } from "@/lib/api";
 
+function isCustomRoleName(roleName) {
+  return /^(User|Admin) Custom \d+$/.test(roleName);
+}
+
+function buildSelectedIds(items, selectedNames, nameKey) {
+  return items.filter((item) => selectedNames?.includes(item[nameKey])).map((item) => item.id);
+}
+
+function toggleValue(list, value) {
+  if (list.includes(value)) {
+    return list.filter((item) => item !== value);
+  }
+  return [...list, value];
+}
+
+function buildGroupedPermissions(permissions) {
+  return permissions.reduce((accumulator, permission) => {
+    let group = "System";
+    const name = permission.permission_name;
+
+    if (name.includes("blog")) {
+      group = "Blogs";
+    } else if (name.includes("user")) {
+      group = "User Management";
+    } else if (name.includes("report") || name.includes("analytics")) {
+      group = "Reports and Analytics";
+    } else if (name.includes("article") || name.includes("comment")) {
+      group = "CMS";
+    } else if (name.includes("product") || name.includes("inventory") || name.includes("refund") || name.includes("discount")) {
+      group = "Store";
+    } else if (name.includes("audit") || name.includes("password") || name.includes("blacklist")) {
+      group = "Security";
+    }
+
+    const nextGroup = accumulator[group] || [];
+    accumulator[group] = [...nextGroup, permission];
+    return accumulator;
+  }, {});
+}
+
+function getStatusBadge(isActive) {
+  if (isActive) {
+    return <Badge variant="success">Active</Badge>;
+  }
+  return <Badge variant="danger">Inactive</Badge>;
+}
+
 export default function UsersPage() {
   return (
     <RequireAuth permission="view_user">
@@ -29,11 +76,19 @@ function Users({ currentUser }) {
   async function load() {
     const nextUsers = await api("/rbac/users");
     setUsers(nextUsers);
-    if (canManageRoles) {
-      const [nextRoles, nextPermissions] = await Promise.all([api("/rbac/roles"), api("/rbac/permissions")]);
-      setRoles(nextRoles);
-      setPermissions(nextPermissions);
+
+    if (!canManageRoles) {
+      setRoles([]);
+      setPermissions([]);
+      return;
     }
+
+    const [nextRoles, nextPermissions] = await Promise.all([
+      api("/rbac/roles"),
+      api("/rbac/permissions"),
+    ]);
+    setRoles(nextRoles);
+    setPermissions(nextPermissions);
   }
 
   useEffect(() => {
@@ -48,8 +103,8 @@ function Users({ currentUser }) {
 
   return (
     <>
-      <PageHeader 
-        title="User Management" 
+      <PageHeader
+        title="User Management"
         description="Create users, assign roles, grant permissions, and control account status."
       >
         {hasPermission(currentUser, "create_user") && <button className="btn primary" onClick={() => setEditing({})}>Create User</button>}
@@ -59,19 +114,22 @@ function Users({ currentUser }) {
         <table>
           <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Roles</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name}</td>
-                <td>{user.username}</td>
-                <td>{user.email}</td>
-                <td>{user.roles.filter(role => !role.match(/^(User|Admin) Custom \d+$/)).map((role) => <span className="role-badge" key={role}>{role}</span>)}</td>
-                <td><Badge variant={user.is_active ? "success" : "danger"}>{user.is_active ? "Active" : "Inactive"}</Badge></td>
-                <td className="actions">
-                  {hasPermission(currentUser, "edit_user") && <button className="btn" onClick={() => setEditing(user)}>Edit</button>}
-                  {hasPermission(currentUser, "delete_user") && user.id !== currentUser.id && <button className="btn danger" onClick={() => removeUser(user.id)}>Delete</button>}
-                </td>
-              </tr>
-            ))}
+            {users.map((user) => {
+              const visibleRoles = user.roles.filter((role) => !isCustomRoleName(role));
+              return (
+                <tr key={user.id}>
+                  <td>{user.name}</td>
+                  <td>{user.username}</td>
+                  <td>{user.email}</td>
+                  <td>{visibleRoles.map((role) => <span className="role-badge" key={role}>{role}</span>)}</td>
+                  <td>{getStatusBadge(user.is_active)}</td>
+                  <td className="actions">
+                    {hasPermission(currentUser, "edit_user") && <button className="btn" onClick={() => setEditing(user)}>Edit</button>}
+                    {hasPermission(currentUser, "delete_user") && user.id !== currentUser.id && <button className="btn danger" onClick={() => removeUser(user.id)}>Delete</button>}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -103,27 +161,18 @@ Users.propTypes = {
 };
 
 function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved }) {
-  const [selectedRoles, setSelectedRoles] = useState(() => roles.filter((role) => user.roles?.includes(role.role_name)).map((role) => role.id));
-  const [selectedPermissions, setSelectedPermissions] = useState(() => permissions.filter((permission) => user.permissions?.includes(permission.permission_name)).map((permission) => permission.id));
+  const [selectedRoles, setSelectedRoles] = useState(() => buildSelectedIds(roles, user.roles, "role_name"));
+  const [selectedPermissions, setSelectedPermissions] = useState(() => buildSelectedIds(permissions, user.permissions, "permission_name"));
   const [error, setError] = useState("");
   const isEdit = Boolean(user.id);
+  const grouped = useMemo(() => buildGroupedPermissions(permissions), [permissions]);
 
-  const grouped = useMemo(() => {
-    return permissions.reduce((acc, permission) => {
-      const group = permission.permission_name.includes("blog") ? "Blogs"
-        : permission.permission_name.includes("user") ? "User Management"
-          : permission.permission_name.includes("report") || permission.permission_name.includes("analytics") ? "Reports and Analytics"
-            : permission.permission_name.includes("article") || permission.permission_name.includes("comment") ? "CMS"
-              : permission.permission_name.includes("product") || permission.permission_name.includes("inventory") || permission.permission_name.includes("refund") || permission.permission_name.includes("discount") ? "Store"
-                : permission.permission_name.includes("audit") || permission.permission_name.includes("password") || permission.permission_name.includes("blacklist") ? "Security"
-                  : "System";
-      acc[group] = [...(acc[group] || []), permission];
-      return acc;
-    }, {});
-  }, [permissions]);
+  function handleRoleToggle(roleId) {
+    setSelectedRoles((current) => toggleValue(current, roleId));
+  }
 
-  function toggle(list, setList, id) {
-    setList(list.includes(id) ? list.filter((item) => item !== id) : [...list, id]);
+  function handlePermissionToggle(permissionId) {
+    setSelectedPermissions((current) => toggleValue(current, permissionId));
   }
 
   async function submit(event) {
@@ -138,6 +187,7 @@ function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved 
       role_ids: canManageRoles ? selectedRoles : [],
       permission_ids: canManageRoles ? selectedPermissions : [],
     };
+
     if (!isEdit) {
       payload.password = form.get("password");
       payload.confirm_password = form.get("confirm_password");
@@ -146,6 +196,7 @@ function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved 
         return;
       }
     }
+
     try {
       await api(isEdit ? `/rbac/users/${user.id}` : "/rbac/users", {
         method: isEdit ? "PUT" : "POST",
@@ -174,27 +225,35 @@ function UserModal({ user, roles, permissions, canManageRoles, onClose, onSaved 
           </div>
           <div>
             <h3>Role Selection</h3>
-            {canManageRoles ? roles.filter(role => !role.role_name.match(/^(User|Admin) Custom \d+$/)).map((role) => (
-              <label className="check" key={role.id} htmlFor={`role-${role.id}`}>
-                <input id={`role-${role.id}`} type="checkbox" checked={selectedRoles.includes(role.id)} onChange={() => toggle(selectedRoles, setSelectedRoles, role.id)} />
-                {role.role_name}
-              </label>
-            )) : <p className="muted">Only role managers can assign roles.</p>}
+            {canManageRoles ? (
+              roles.filter((role) => !isCustomRoleName(role.role_name)).map((role) => (
+                <label className="check" key={role.id} htmlFor={`role-${role.id}`}>
+                  <input id={`role-${role.id}`} type="checkbox" checked={selectedRoles.includes(role.id)} onChange={() => handleRoleToggle(role.id)} />
+                  {role.role_name}
+                </label>
+              ))
+            ) : (
+              <p className="muted">Only role managers can assign roles.</p>
+            )}
           </div>
         </div>
         <h3>Permissions Selection</h3>
         <div className="permission-grid">
-          {canManageRoles ? Object.entries(grouped).map(([group, items]) => (
-            <div key={group}>
-              <b>{group}</b>
-              {items.map((permission) => (
-                <label className="check" key={permission.id} htmlFor={`perm-${permission.id}`}>
-                  <input id={`perm-${permission.id}`} type="checkbox" checked={selectedPermissions.includes(permission.id)} onChange={() => toggle(selectedPermissions, setSelectedPermissions, permission.id)} />
-                  {permission.permission_name}
-                </label>
-              ))}
-            </div>
-          )) : <p className="muted">Only role managers can assign permissions.</p>}
+          {canManageRoles ? (
+            Object.entries(grouped).map(([group, items]) => (
+              <div key={group}>
+                <b>{group}</b>
+                {items.map((permission) => (
+                  <label className="check" key={permission.id} htmlFor={`perm-${permission.id}`}>
+                    <input id={`perm-${permission.id}`} type="checkbox" checked={selectedPermissions.includes(permission.id)} onChange={() => handlePermissionToggle(permission.id)} />
+                    {permission.permission_name}
+                  </label>
+                ))}
+              </div>
+            ))
+          ) : (
+            <p className="muted">Only role managers can assign permissions.</p>
+          )}
         </div>
         <div className="error">{error}</div>
         <div className="actions">

@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
-import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
-import { api, getToken } from "@/lib/api";
 import PageHeader from "@/components/PageHeader";
+import { api } from "@/lib/api";
+import dynamic from "next/dynamic";
 
 const ResponsiveContainer = dynamic(() => import("recharts").then(m => m.ResponsiveContainer), { ssr: false });
 const BarChart = dynamic(() => import("recharts").then(m => m.BarChart), { ssr: false });
@@ -44,6 +44,16 @@ StatRow.defaultProps = {
 
 function chartEmpty(message) {
   return <p className="muted" style={{ textAlign: "center", padding: "3rem 0" }}>{message}</p>;
+}
+
+function buildChartSection(mounted, data, emptyMessage, renderer) {
+  if (!mounted) {
+    return <p className="muted">Loading chart...</p>;
+  }
+  if (data.length === 0) {
+    return chartEmpty(emptyMessage);
+  }
+  return renderer(data);
 }
 
 export default function ReportsPage() {
@@ -101,74 +111,59 @@ function Reports() {
     a.click();
   };
 
-  if (loading) return <div style={{ padding: "3rem", textAlign: "center" }}>⏳ Loading reports...</div>;
-  if (error) return <div style={{ padding: "3rem", textAlign: "center", color: "#ef4444" }}>⚠️ {error}</div>;
+  if (loading) return <div style={{ padding: "3rem", textAlign: "center" }}>â³ Loading reports...</div>;
+  if (error) return <div style={{ padding: "3rem", textAlign: "center", color: "#ef4444" }}>âš ï¸ {error}</div>;
 
   const us = summary?.user_statistics || {};
   const bs = summary?.blog_statistics || {};
   const as = summary?.activity_statistics || {};
 
-  let blogChart = null;
-  if (mounted && charts?.blog_growth?.length > 0) {
-    blogChart = (
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={charts.blog_growth}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="name" fontSize={11} />
-          <YAxis allowDecimals={false} fontSize={11} />
-          <Tooltip />
-          <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} name="Blogs Created" />
-        </BarChart>
-      </ResponsiveContainer>
-    );
-  } else if (mounted) {
-    blogChart = chartEmpty("No data yet.");
-  }
+  const blogChart = buildChartSection(mounted, charts?.blog_growth || [], "No data yet.", (data) => (
+    <ResponsiveContainer width="100%" height={200}>
+      <BarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="name" fontSize={11} />
+        <YAxis allowDecimals={false} fontSize={11} />
+        <Tooltip />
+        <Bar dataKey="count" fill="#10b981" radius={[4, 4, 0, 0]} name="Blogs Created" />
+      </BarChart>
+    </ResponsiveContainer>
+  ));
 
-  let userChart = null;
-  if (mounted && charts?.user_growth?.length > 0) {
-    userChart = (
-      <ResponsiveContainer width="100%" height={200}>
-        <LineChart data={charts.user_growth}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} />
-          <XAxis dataKey="name" fontSize={11} />
-          <YAxis allowDecimals={false} fontSize={11} />
-          <Tooltip />
-          <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} name="Users Created" />
-        </LineChart>
-      </ResponsiveContainer>
-    );
-  } else if (mounted) {
-    userChart = chartEmpty("No data yet.");
-  }
+  const userChart = buildChartSection(mounted, charts?.user_growth || [], "No data yet.", (data) => (
+    <ResponsiveContainer width="100%" height={200}>
+      <LineChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+        <XAxis dataKey="name" fontSize={11} />
+        <YAxis allowDecimals={false} fontSize={11} />
+        <Tooltip />
+        <Line type="monotone" dataKey="count" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} name="Users Created" />
+      </LineChart>
+    </ResponsiveContainer>
+  ));
 
-  let roleChart = null;
-  if (mounted && charts?.role_distribution?.length > 0) {
-    roleChart = (
-      <ResponsiveContainer width="100%" height={200}>
-        <PieChart>
-          <Pie data={charts.role_distribution} cx="50%" cy="50%" outerRadius={75} dataKey="count" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
-            {charts.role_distribution.map((_, index) => (
-              <Cell key={`${charts.role_distribution[index].name}-${index}`} fill={COLORS[index % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-        </PieChart>
-      </ResponsiveContainer>
-    );
-  } else if (mounted) {
-    roleChart = chartEmpty("No data yet.");
-  }
+  const roleChart = buildChartSection(mounted, charts?.role_distribution || [], "No data yet.", (data) => (
+    <ResponsiveContainer width="100%" height={200}>
+      <PieChart>
+        <Pie data={data} cx="50%" cy="50%" outerRadius={75} dataKey="count" nameKey="name" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+          {data.map((entry, index) => (
+            <Cell key={entry.name} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip />
+      </PieChart>
+    </ResponsiveContainer>
+  ));
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-      <PageHeader title="System Reports" description="Live analytics from PostgreSQL — no placeholders.">
-        <button className="btn outline" onClick={handleExport}>⬇ Export CSV</button>
+      <PageHeader title="System Reports" description="Live analytics from PostgreSQL â€” no placeholders.">
+        <button className="btn outline" onClick={handleExport}>â¬‡ Export CSV</button>
       </PageHeader>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>
         <div className="card" style={{ padding: "1.5rem" }}>
-          <h3 style={{ marginBottom: "0.75rem", borderBottom: "2px solid #e2e8f0", paddingBottom: "0.5rem" }}>👤 Users</h3>
+          <h3 style={{ marginBottom: "0.75rem", borderBottom: "2px solid #e2e8f0", paddingBottom: "0.5rem" }}>ðŸ‘¤ Users</h3>
           <StatRow label="Total Users" value={us.total_users} />
           <StatRow label="Active" value={us.active_users} color="#10b981" />
           <StatRow label="Inactive" value={us.inactive_users} color="#ef4444" />
@@ -176,7 +171,7 @@ function Reports() {
           <StatRow label="Super Admins" value={us.super_admins} color="#8b5cf6" />
         </div>
         <div className="card" style={{ padding: "1.5rem" }}>
-          <h3 style={{ marginBottom: "0.75rem", borderBottom: "2px solid #e2e8f0", paddingBottom: "0.5rem" }}>📝 Blogs</h3>
+          <h3 style={{ marginBottom: "0.75rem", borderBottom: "2px solid #e2e8f0", paddingBottom: "0.5rem" }}>ðŸ“ Blogs</h3>
           <StatRow label="Total Blogs" value={bs.total_blogs} />
           <StatRow label="Published" value={bs.published_blogs} color="#10b981" />
           <StatRow label="Pending Review" value={bs.pending_blogs} color="#f59e0b" />
@@ -184,7 +179,7 @@ function Reports() {
           <StatRow label="Rejected" value={bs.rejected_blogs} color="#ef4444" />
         </div>
         <div className="card" style={{ padding: "1.5rem" }}>
-          <h3 style={{ marginBottom: "0.75rem", borderBottom: "2px solid #e2e8f0", paddingBottom: "0.5rem" }}>⚡ Today</h3>
+          <h3 style={{ marginBottom: "0.75rem", borderBottom: "2px solid #e2e8f0", paddingBottom: "0.5rem" }}>âš¡ Today</h3>
           <StatRow label="Logins" value={as.total_logins_today} />
           <StatRow label="Failed Logins" value={as.failed_logins_today} color="#ef4444" />
           <StatRow label="Active Sessions" value={as.active_sessions} color="#10b981" />
@@ -195,22 +190,22 @@ function Reports() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(460px, 1fr))", gap: "1.5rem", marginBottom: "2rem" }}>
         <div className="card" style={{ padding: "1.5rem" }}>
-          <h3 style={{ marginBottom: "1rem" }}>📊 Blog Activity (Last 7 Days)</h3>
+          <h3 style={{ marginBottom: "1rem" }}>ðŸ“Š Blog Activity (Last 7 Days)</h3>
           {blogChart}
         </div>
 
         <div className="card" style={{ padding: "1.5rem" }}>
-          <h3 style={{ marginBottom: "1rem" }}>📈 User Growth (By Month)</h3>
+          <h3 style={{ marginBottom: "1rem" }}>ðŸ“ˆ User Growth (By Month)</h3>
           {userChart}
         </div>
 
         <div className="card" style={{ padding: "1.5rem" }}>
-          <h3 style={{ marginBottom: "1rem" }}>🛡️ Role Distribution</h3>
+          <h3 style={{ marginBottom: "1rem" }}>ðŸ›¡ï¸ Role Distribution</h3>
           {roleChart}
         </div>
 
         <div className="card" style={{ padding: "1.5rem" }}>
-          <h3 style={{ marginBottom: "1rem" }}>🏆 Most Active Users (This Month)</h3>
+          <h3 style={{ marginBottom: "1rem" }}>ðŸ† Most Active Users (This Month)</h3>
           {charts?.top_users?.length > 0 ? (
             charts.top_users.map((user, index) => (
               <div key={`${user.username}-${index}`} style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid #f1f5f9" }}>
@@ -228,7 +223,7 @@ function Reports() {
       </div>
 
       <div className="card" style={{ padding: "1.5rem" }}>
-        <h3 style={{ marginBottom: "1rem" }}>🕐 Recent System Activity</h3>
+        <h3 style={{ marginBottom: "1rem" }}>ðŸ• Recent System Activity</h3>
         <div style={{ maxHeight: "300px", overflowY: "auto" }}>
           {recent.length === 0 ? (
             <p className="muted" style={{ textAlign: "center", padding: "2rem 0" }}>No recent activity.</p>

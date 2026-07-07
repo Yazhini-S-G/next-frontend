@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import PasswordInput from "@/components/PasswordInput";
-import { api, dashboardPath, getToken, setToken } from "@/lib/api";
+import { api, getToken, setToken } from "@/lib/api";
 
 export default function Home() {
   const router = useRouter();
@@ -15,7 +15,7 @@ export default function Home() {
   useEffect(() => {
     if (!getToken()) return;
     api("/rbac/me")
-      .then((user) => router.push(dashboardPath(user)))
+      .then(() => router.push("/dashboard"))
       .catch(() => {});
   }, [router]);
 
@@ -30,8 +30,8 @@ export default function Home() {
         body: JSON.stringify({ email: form.get("email"), password: form.get("password") }),
       });
       setToken(tokens.access_token);
-      const user = await api("/rbac/me");
-      router.push(dashboardPath(user));
+      await api("/rbac/me");
+      router.push("/dashboard");
     } catch (err) {
       setError(err.message);
     } finally {

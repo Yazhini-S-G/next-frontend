@@ -6,24 +6,24 @@ import Pagination from "./Pagination";
 import EmptyState from "./EmptyState";
 
 const ACTION_CONFIG = {
-  "Login":                    { color: "#22c55e", bg: "#f0fdf4", icon: "🔐" },
-  "Logout":                   { color: "#f97316", bg: "#fff7ed", icon: "🚪" },
-  "Failed Login":             { color: "#ef4444", bg: "#fef2f2", icon: "⛔" },
-  "Create Blog":              { color: "#3b82f6", bg: "#eff6ff", icon: "✏️" },
-  "Update Blog":              { color: "#eab308", bg: "#fefce8", icon: "📝" },
-  "Delete Blog":              { color: "#ef4444", bg: "#fef2f2", icon: "🗑️" },
-  "Submit Blog For Review":   { color: "#06b6d4", bg: "#ecfeff", icon: "📤" },
-  "Publish Blog":             { color: "#10b981", bg: "#ecfdf5", icon: "🌐" },
-  "Approve Blog":             { color: "#10b981", bg: "#ecfdf5", icon: "✅" },
-  "Reject Blog":              { color: "#ef4444", bg: "#fef2f2", icon: "❌" },
-  "Unpublish Blog":           { color: "#64748b", bg: "#f8fafc", icon: "📥" },
-  "Create User":              { color: "#8b5cf6", bg: "#f5f3ff", icon: "👤" },
-  "Update User":              { color: "#a855f7", bg: "#faf5ff", icon: "✏️" },
-  "Delete User":              { color: "#dc2626", bg: "#fef2f2", icon: "🗑️" },
-  "Create Role":              { color: "#0ea5e9", bg: "#f0f9ff", icon: "🛡️" },
-  "Update Role":              { color: "#0284c7", bg: "#f0f9ff", icon: "✏️" },
-  "Modify Permissions":       { color: "#f59e0b", bg: "#fffbeb", icon: "🔑" },
-  "Password Reset":           { color: "#64748b", bg: "#f8fafc", icon: "🔒" },
+  "Login": { color: "#22c55e", bg: "#f0fdf4", icon: "🔐" },
+  "Logout": { color: "#f97316", bg: "#fff7ed", icon: "🚪" },
+  "Failed Login": { color: "#ef4444", bg: "#fef2f2", icon: "⛔" },
+  "Create Blog": { color: "#3b82f6", bg: "#eff6ff", icon: "✏️" },
+  "Update Blog": { color: "#eab308", bg: "#fefce8", icon: "📝" },
+  "Delete Blog": { color: "#ef4444", bg: "#fef2f2", icon: "🗑️" },
+  "Submit Blog For Review": { color: "#06b6d4", bg: "#ecfeff", icon: "📤" },
+  "Publish Blog": { color: "#10b981", bg: "#ecfdf5", icon: "🌐" },
+  "Approve Blog": { color: "#10b981", bg: "#ecfdf5", icon: "✅" },
+  "Reject Blog": { color: "#ef4444", bg: "#fef2f2", icon: "❌" },
+  "Unpublish Blog": { color: "#64748b", bg: "#f8fafc", icon: "📥" },
+  "Create User": { color: "#8b5cf6", bg: "#f5f3ff", icon: "👤" },
+  "Update User": { color: "#a855f7", bg: "#faf5ff", icon: "✏️" },
+  "Delete User": { color: "#dc2626", bg: "#fef2f2", icon: "🗑️" },
+  "Create Role": { color: "#0ea5e9", bg: "#f0f9ff", icon: "🛡️" },
+  "Update Role": { color: "#0284c7", bg: "#f0f9ff", icon: "✏️" },
+  "Modify Permissions": { color: "#f59e0b", bg: "#fffbeb", icon: "🔑" },
+  "Password Reset": { color: "#64748b", bg: "#f8fafc", icon: "🔒" },
 };
 
 const MODULE_ICONS = {
@@ -35,10 +35,11 @@ const MODULE_ICONS = {
 
 function getActionStyle(action) {
   if (ACTION_CONFIG[action]) return ACTION_CONFIG[action];
-  // Fuzzy match
-  for (const [key, val] of Object.entries(ACTION_CONFIG)) {
-    if (action.toLowerCase().includes(key.toLowerCase())) return val;
+
+  for (const [key, value] of Object.entries(ACTION_CONFIG)) {
+    if (action.toLowerCase().includes(key.toLowerCase())) return value;
   }
+
   return { color: "#64748b", bg: "#f8fafc", icon: "📌" };
 }
 
@@ -73,21 +74,7 @@ function LogRow({ log }) {
 
   return (
     <>
-      <tr
-        onClick={() => setExpanded(e => !e)}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setExpanded(prev => !prev);
-          }
-        }}
-        tabIndex={0}
-        role="button"
-        style={{ borderBottom: "1px solid #f1f5f9", cursor: "pointer", transition: "background 0.1s" }}
-        onMouseEnter={e => e.currentTarget.style.background = "#f8fafc"}
-        onMouseLeave={e => e.currentTarget.style.background = ""}
-      >
-        {/* Time */}
+      <tr style={{ borderBottom: "1px solid #f1f5f9" }}>
         <td style={{ padding: "0.85rem 1rem", whiteSpace: "nowrap", verticalAlign: "top" }}>
           <div style={{ fontWeight: 600, fontSize: "0.85rem" }}>
             {new Date(log.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
@@ -97,34 +84,45 @@ function LogRow({ log }) {
           </div>
         </td>
 
-        {/* Actor */}
         <td style={{ padding: "0.85rem 1rem", verticalAlign: "top" }}>
           <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{log.username}</div>
           {log.email && <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>{log.email}</div>}
         </td>
 
-        {/* Module */}
         <td style={{ padding: "0.85rem 1rem", verticalAlign: "top" }}>
           <span style={{ fontSize: "0.85rem" }}>{modIcon} {log.module}</span>
         </td>
 
-        {/* Action badge */}
         <td style={{ padding: "0.85rem 1rem", verticalAlign: "top" }}>
           <ActionBadge action={log.action_type} />
         </td>
 
-        {/* Description */}
         <td style={{ padding: "0.85rem 1rem", fontSize: "0.85rem", color: "#475569", maxWidth: 320, verticalAlign: "top" }}>
-          <div style={{
-            whiteSpace: expanded ? "normal" : "nowrap",
-            overflow: expanded ? "visible" : "hidden",
-            textOverflow: "ellipsis",
-          }}>
-            {log.description}
-          </div>
-          <div style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: "0.2rem" }}>
-            {expanded ? "▲ collapse" : "▼ expand"}
-          </div>
+          <button
+            type="button"
+            onClick={() => setExpanded((currentExpanded) => !currentExpanded)}
+            style={{
+              width: "100%",
+              border: 0,
+              background: "transparent",
+              padding: 0,
+              textAlign: "left",
+              cursor: "pointer",
+              color: "inherit",
+              font: "inherit",
+            }}
+          >
+            <div style={{
+              whiteSpace: expanded ? "normal" : "nowrap",
+              overflow: expanded ? "visible" : "hidden",
+              textOverflow: "ellipsis",
+            }}>
+              {log.description}
+            </div>
+            <div style={{ fontSize: "0.72rem", color: "#94a3b8", marginTop: "0.2rem" }}>
+              {expanded ? "▲ collapse" : "▼ expand"}
+            </div>
+          </button>
         </td>
       </tr>
       {expanded && (
@@ -190,23 +188,26 @@ export default function AdminMonitoringTable({ logs, loading, page, pages, onPag
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
           <thead>
             <tr style={{ borderBottom: "2px solid #f1f5f9", background: "#f8fafc" }}>
-              {["Time", "Actor", "Module", "Action", "Description (click to expand)"].map(h => (
-                <th key={h} style={{
-                  padding: "0.9rem 1rem",
-                  textAlign: "left",
-                  fontSize: "0.75rem",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  color: "#94a3b8",
-                }}>
-                  {h}
+              {["Time", "Actor", "Module", "Action", "Description (click to expand)"].map((heading) => (
+                <th
+                  key={heading}
+                  style={{
+                    padding: "0.9rem 1rem",
+                    textAlign: "left",
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                    color: "#94a3b8",
+                  }}
+                >
+                  {heading}
                 </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {logs.map(log => <LogRow key={log.id} log={log} />)}
+            {logs.map((log) => <LogRow key={log.id} log={log} />)}
           </tbody>
         </table>
       </div>

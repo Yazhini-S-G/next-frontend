@@ -19,19 +19,19 @@ function ResetPasswordForm() {
   const [strength, setStrength] = useState(0);
 
   useEffect(() => {
-    if (token) return;
-    setIsError(true);
-    setMessage("Invalid or missing reset token. Please request a new password reset link.");
+    if (!token) {
+      setIsError(true);
+      setMessage("Invalid or missing reset token. Please request a new password reset link.");
+    }
   }, [token]);
 
   useEffect(() => {
-    const checks = [
-      password.length > 7,
-      /[A-Z]/.test(password),
-      /[0-9]/.test(password),
-      /[^A-Za-z0-9]/.test(password),
-    ];
-    setStrength(checks.filter(Boolean).length);
+    let score = 0;
+    if (password.length > 7) score++;
+    if (password.match(/[A-Z]/)) score++;
+    if (password.match(/\d/)) score++;
+    if (password.match(/[^A-Za-z0-9]/)) score++;
+    setStrength(score);
   }, [password]);
 
   function getStrengthColor() {
@@ -77,8 +77,8 @@ function ResetPasswordForm() {
       globalThis.setTimeout(() => {
         router.push("/");
       }, 3000);
-    } catch (error) {
-      setMessage(error.message || "Failed to reset password.");
+    } catch (err) {
+      setMessage(err.message || "Failed to reset password.");
       setIsError(true);
     } finally {
       setLoading(false);
@@ -174,7 +174,7 @@ function ResetPasswordForm() {
 
           <div style={{ textAlign: "center", marginTop: "1rem" }}>
             <Link href="/" style={{ fontSize: "0.85rem", color: "#64748b", textDecoration: "none" }}>
-              ← Back to Login
+              â† Back to Login
             </Link>
           </div>
         </form>

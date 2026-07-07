@@ -9,7 +9,7 @@ import Badge from "@/components/Badge";
 import { api, hasPermission, imageUrl } from "@/lib/api";
 
 const stripHtml = (html) => {
-  if (typeof globalThis.window === "undefined") return "";
+  if (globalThis.window === undefined) return "";
   const doc = new DOMParser().parseFromString(html || "", "text/html");
   return doc.body.textContent || "";
 };

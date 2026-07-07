@@ -11,15 +11,12 @@ import { api, getToken } from "@/lib/api";
 
 export default function AdminMonitoringPage() {
   const [activeTab, setActiveTab] = useState("activity");
-  
   const [logsData, setLogsData] = useState({ items: [], total: 0, page: 1, size: 20, pages: 0 });
   const [sessionData, setSessionData] = useState({ items: [], total: 0, page: 1, size: 20, pages: 0 });
   const [stats, setStats] = useState(null);
-  
   const [loadingLogs, setLoadingLogs] = useState(true);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [loadingStats, setLoadingStats] = useState(true);
-  
   const [logsPage, setLogsPage] = useState(1);
   const [sessionsPage, setSessionsPage] = useState(1);
   const [filters, setFilters] = useState({});
@@ -33,7 +30,7 @@ export default function AdminMonitoringPage() {
       if (filters.action_type) params.append("action_type", filters.action_type);
       if (filters.module) params.append("module", filters.module);
       if (filters.date) params.append("date", filters.date);
-      
+
       const data = await api(`/api/activity-logs?${params.toString()}`);
       setLogsData(data);
     } catch (error) {
@@ -74,7 +71,7 @@ export default function AdminMonitoringPage() {
   const handleExport = async () => {
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"}/api/activity-logs/export`, {
-        headers: { "Authorization": `Bearer ${getToken()}` }
+        headers: { "Authorization": `Bearer ${getToken()}` },
       });
       if (!res.ok) throw new Error("Failed to export logs");
       const blob = await res.blob();
@@ -84,6 +81,7 @@ export default function AdminMonitoringPage() {
       a.download = `admin_monitoring_${new Date().toISOString().split("T")[0]}.csv`;
       a.click();
     } catch (error) {
+      console.error(error);
       alert("Error exporting logs");
     }
   };
@@ -104,16 +102,10 @@ export default function AdminMonitoringPage() {
             <AdminStatsCards stats={stats} loading={loadingStats} />
 
             <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem", borderBottom: "2px solid #e2e8f0", paddingBottom: "0.5rem" }}>
-              <button 
-                className={`btn ${activeTab === "activity" ? "primary" : "ghost"}`} 
-                onClick={() => setActiveTab("activity")}
-              >
+              <button className={`btn ${activeTab === "activity" ? "primary" : "ghost"}`} onClick={() => setActiveTab("activity")}>
                 Activity Logs
               </button>
-              <button 
-                className={`btn ${activeTab === "sessions" ? "primary" : "ghost"}`} 
-                onClick={() => setActiveTab("sessions")}
-              >
+              <button className={`btn ${activeTab === "sessions" ? "primary" : "ghost"}`} onClick={() => setActiveTab("sessions")}>
                 Session Tracking
               </button>
             </div>
@@ -121,23 +113,23 @@ export default function AdminMonitoringPage() {
             {activeTab === "activity" && (
               <>
                 <ActivityFilters onFilter={(newFilters) => { setFilters(newFilters); setLogsPage(1); }} />
-                <AdminMonitoringTable 
-                  logs={logsData.items} 
-                  loading={loadingLogs} 
-                  page={logsData.page} 
-                  pages={logsData.pages} 
-                  onPageChange={setLogsPage} 
+                <AdminMonitoringTable
+                  logs={logsData.items}
+                  loading={loadingLogs}
+                  page={logsData.page}
+                  pages={logsData.pages}
+                  onPageChange={setLogsPage}
                 />
               </>
             )}
 
             {activeTab === "sessions" && (
-              <AdminSessionTable 
-                sessions={sessionData.items} 
-                loading={loadingSessions} 
-                page={sessionData.page} 
-                pages={sessionData.pages} 
-                onPageChange={setSessionsPage} 
+              <AdminSessionTable
+                sessions={sessionData.items}
+                loading={loadingSessions}
+                page={sessionData.page}
+                pages={sessionData.pages}
+                onPageChange={setSessionsPage}
               />
             )}
           </div>
@@ -146,4 +138,3 @@ export default function AdminMonitoringPage() {
     </RequireAuth>
   );
 }
-

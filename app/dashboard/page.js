@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
@@ -7,11 +7,11 @@ import PageHeader from "@/components/PageHeader";
 import { api } from "@/lib/api";
 import dynamic from "next/dynamic";
 
-const ResponsiveContainer = dynamic(() => import("recharts").then(m => m.ResponsiveContainer), { ssr: false });
-const PieChart = dynamic(() => import("recharts").then(m => m.PieChart), { ssr: false });
-const Pie = dynamic(() => import("recharts").then(m => m.Pie), { ssr: false });
-const Cell = dynamic(() => import("recharts").then(m => m.Cell), { ssr: false });
-const Tooltip = dynamic(() => import("recharts").then(m => m.Tooltip), { ssr: false });
+const ResponsiveContainer = dynamic(() => import("recharts").then((m) => m.ResponsiveContainer), { ssr: false });
+const PieChart = dynamic(() => import("recharts").then((m) => m.PieChart), { ssr: false });
+const Pie = dynamic(() => import("recharts").then((m) => m.Pie), { ssr: false });
+const Cell = dynamic(() => import("recharts").then((m) => m.Cell), { ssr: false });
+const Tooltip = dynamic(() => import("recharts").then((m) => m.Tooltip), { ssr: false });
 
 const BLOG_COLORS = ["#10b981", "#f59e0b", "#64748b", "#ef4444", "#3b82f6"];
 
@@ -26,6 +26,61 @@ const ACTION_ICONS = {
   "Login": "Login",
   "Logout": "Logout",
 };
+
+function buildPieSection(mounted, chartData) {
+  if (!mounted) {
+    return <p className="muted">Loading chart...</p>;
+  }
+
+  if (chartData.length === 0) {
+    return <p className="muted" style={{ textAlign: "center", padding: "3rem 0" }}>No blogs yet. Start writing!</p>;
+  }
+
+  return (
+    <ResponsiveContainer width="100%" height={240}>
+      <PieChart>
+        <Pie
+          data={chartData}
+          cx="50%"
+          cy="50%"
+          innerRadius={55}
+          outerRadius={85}
+          paddingAngle={4}
+          dataKey="value"
+          label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+          labelLine={false}
+        >
+          {chartData.map((entry) => (
+            <Cell key={entry.name} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+function buildActivitySection(activity) {
+  if (activity.length === 0) {
+    return <p className="muted" style={{ textAlign: "center", padding: "2rem 0" }}>No activity recorded yet.</p>;
+  }
+
+  return activity.map((item) => (
+    <div key={`${item.action}-${item.timestamp}`} style={{ padding: "0.65rem 0", borderBottom: "1px solid #f1f5f9" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontWeight: 600, fontSize: "0.85rem", color: "#3b82f6" }}>
+          {ACTION_ICONS[item.action] || "Item"} {item.action}
+        </span>
+        <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
+          {new Date(item.timestamp).toLocaleString()}
+        </span>
+      </div>
+      <div style={{ fontSize: "0.82rem", color: "#475569", marginTop: "0.2rem" }}>
+        {item.description}
+      </div>
+    </div>
+  ));
+}
 
 export default function DashboardPage() {
   return (
@@ -90,62 +145,12 @@ function Dashboard({ user }) {
   ];
 
   const chartData = statCards
-    .filter(card => ["Published", "Pending Review", "Drafts", "Rejected", "Approved"].includes(card.label) && card.value > 0)
+    .filter((card) => ["Published", "Pending Review", "Drafts", "Rejected", "Approved"].includes(card.label) && card.value > 0)
     .map((card, index) => ({
       name: card.label,
       value: card.value,
       color: BLOG_COLORS[index % BLOG_COLORS.length],
     }));
-
-  let pieSection = <p className="muted" style={{ textAlign: "center", padding: "3rem 0" }}>No blogs yet. Start writing!</p>;
-  if (mounted) {
-    if (chartData.length > 0) {
-      pieSection = (
-        <ResponsiveContainer width="100%" height={240}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              cx="50%"
-              cy="50%"
-              innerRadius={55}
-              outerRadius={85}
-              paddingAngle={4}
-              dataKey="value"
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              labelLine={false}
-            >
-              {chartData.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
-      );
-    } else {
-      pieSection = <p className="muted" style={{ textAlign: "center", padding: "3rem 0" }}>No blogs yet. Start writing!</p>;
-    }
-  } else {
-    pieSection = <p className="muted">Loading chart...</p>;
-  }
-
-  const activitySection = activity.length > 0
-    ? activity.map((item) => (
-        <div key={`${item.action}-${item.timestamp}`} style={{ padding: "0.65rem 0", borderBottom: "1px solid #f1f5f9" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontWeight: 600, fontSize: "0.85rem", color: "#3b82f6" }}>
-              {ACTION_ICONS[item.action] || "Item"} {item.action}
-            </span>
-            <span style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
-              {new Date(item.timestamp).toLocaleString()}
-            </span>
-          </div>
-          <div style={{ fontSize: "0.82rem", color: "#475569", marginTop: "0.2rem" }}>
-            {item.description}
-          </div>
-        </div>
-      ))
-    : <p className="muted" style={{ textAlign: "center", padding: "2rem 0" }}>No activity recorded yet.</p>;
 
   return (
     <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
@@ -167,12 +172,12 @@ function Dashboard({ user }) {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
         <div className="card" style={{ padding: "1.5rem" }}>
           <h3 style={{ marginBottom: "1rem" }}>Blog Status Distribution</h3>
-          {pieSection}
+          {buildPieSection(mounted, chartData)}
         </div>
 
         <div className="card" style={{ padding: "1.5rem" }}>
           <h3 style={{ marginBottom: "1rem" }}>My Recent Activity</h3>
-          <div style={{ maxHeight: "260px", overflowY: "auto" }}>{activitySection}</div>
+          <div style={{ maxHeight: "260px", overflowY: "auto" }}>{buildActivitySection(activity)}</div>
         </div>
       </div>
     </div>
