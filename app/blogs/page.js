@@ -39,10 +39,13 @@ function Blogs({ user }) {
     }
   });
 
-  const [nextBlogs, nextCategories] = await Promise.all([
-    api(`/blogs${params.toString() ? `?${params.toString()}` : ""}`),
-    api("/blogs/categories"),
-  ]);
+  const queryString = params.toString();
+const blogsUrl = queryString ? "/blogs?" + queryString : "/blogs";
+
+const [nextBlogs, nextCategories] = await Promise.all([
+  api(blogsUrl),
+  api("/blogs/categories"),
+]);
 
   setBlogs(nextBlogs);
   setCategories(nextCategories);
