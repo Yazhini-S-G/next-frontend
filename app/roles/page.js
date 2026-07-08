@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import RequireAuth from "@/components/RequireAuth";
 import EmptyState from "@/components/EmptyState";
 import PageHeader from "@/components/PageHeader";
@@ -39,29 +39,35 @@ function Roles() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  async function load() {
-    const [nextRoles, nextPerms] = await Promise.all([
-      api("/rbac/roles"),
-      api("/rbac/permissions"),
-    ]);
-    const coreRoles = nextRoles.filter(
-      r => !r.role_name.match(/^(User|Admin) Custom \d+$/)
-    );
-    setRoles(coreRoles);
-    setPermissions(nextPerms);
+  const load = useCallback(async () => {
+  const [nextRoles, nextPerms] = await Promise.all([
+    api("/rbac/roles"),
+    api("/rbac/permissions"),
+  ]);
 
-    if (coreRoles.length > 0 && !selectedRoleId) {
-      const first = coreRoles[0];
-      setSelectedRoleId(first.id);
-      setSelectedPerms(
-        nextPerms.filter(p => first.permissions.includes(p.permission_name)).map(p => p.id)
-      );
-    }
+  const coreRoles = nextRoles.filter(
+    (r) => !r.role_name.match(/^(User|Admin) Custom \d+$/)
+  );
+
+  setRoles(coreRoles);
+  setPermissions(nextPerms);
+
+  if (coreRoles.length > 0 && !selectedRoleId) {
+    const first = coreRoles[0];
+    setSelectedRoleId(first.id);
+    setSelectedPerms(
+      nextPerms
+        .filter((p) => first.permissions.includes(p.permission_name))
+        .map((p) => p.id)
+    );
   }
+}, [selectedRoleId]);
 
   useEffect(() => {
-    load().catch(e => setMessage({ text: e.message, type: "error" }));
-  }, []);
+  load().catch((e) =>
+    setMessage({ text: e.message, type: "error" })
+  );
+}, [load]);
 
   function selectRole(role) {
     setSelectedRoleId(role.id);

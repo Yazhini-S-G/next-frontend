@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
@@ -58,7 +59,15 @@ function BlogReview({ user }) {
       <section className="grid blog-grid">
         {blogs.map((blog) => (
           <article className="card blog-card" key={blog.id}>
-            {blog.featured_image && <img className="blog-thumb" src={imageUrl(blog.featured_image)} alt="" />}
+            {blog.featured_image && (
+              <Image
+              className="blog-thumb"
+              src={imageUrl(blog.featured_image)}
+              alt={blog.title}
+              width={400}
+              height={250}
+            />
+          )}
             <Badge variant="warning">{blog.status}</Badge>
             <h3>{blog.title}</h3>
             <p className="muted">By {blog.author_name}</p>

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
 import PageHeader from "@/components/PageHeader";
 import Modal from "@/components/Modal";
 import Badge from "@/components/Badge";
 import { api, hasPermission, imageUrl } from "@/lib/api";
+import Image from "next/image";
 
 const stripHtml = (html) => {
   if (globalThis.window === undefined) return "";
@@ -29,21 +30,27 @@ function Blogs({ user }) {
   const [filters, setFilters] = useState({ search: "", status_filter: "", category_id: "" });
   const [error, setError] = useState("");
 
-  async function load() {
-    const params = new URLSearchParams();
-    Object.entries(filters).forEach(([key, value]) => value && params.set(key, value));
-    const [nextBlogs, nextCategories] = await Promise.all([
-      api("/blogs" + (params.toString() ? "?" + params.toString() : "")),
-      api("/blogs/categories"),
-    ]);
-    setBlogs(nextBlogs);
-    setCategories(nextCategories);
-  }
+  const load = useCallback(async () => {
+  const params = new URLSearchParams();
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value) {
+      params.set(key, value);
+    }
+  });
+
+  const [nextBlogs, nextCategories] = await Promise.all([
+    api(`/blogs${params.toString() ? `?${params.toString()}` : ""}`),
+    api("/blogs/categories"),
+  ]);
+
+  setBlogs(nextBlogs);
+  setCategories(nextCategories);
+}, [filters]);
 
   useEffect(() => {
-    load().catch((err) => setError(err.message));
-  }, [filters]);
-
+  load().catch((err) => setError(err.message));
+}, [load]);
   async function remove(id) {
     if (!confirm("Delete this blog?")) return;
     await api(`/blogs/${id}`, { method: "DELETE" });
@@ -77,7 +84,15 @@ function Blogs({ user }) {
       <section className="grid blog-grid" style={{ marginTop: 18 }}>
         {blogs.map((blog) => (
           <article className="card blog-card" key={blog.id}>
-            {blog.featured_image && <img className="blog-thumb" src={imageUrl(blog.featured_image)} alt="" />}
+            {blog.featured_image && (
+              <Image
+              className="blog-thumb"
+              src={imageUrl(blog.featured_image)}
+              alt={blog.title}
+              width={400}
+              height={250}
+            />
+          )}
             <Badge>{blog.status}</Badge>
             {blog.is_featured && <Badge variant="warning">Featured</Badge>}
             <h3>{blog.title}</h3>
@@ -149,7 +164,16 @@ function BlogModal({ blog, categories, user, onClose, onSaved }) {
             <div className="field"><label htmlFor="blog-category">Category</label><select id="blog-category" name="category_id" defaultValue={blog.category_id || ""}><option value="">Uncategorized</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div>
             <div className="field"><label htmlFor="blog-tags">Tags</label><input id="blog-tags" name="tags" defaultValue={blog.tags || ""} /></div>
             <div className="field"><label htmlFor="blog-featured-image">Featured Image</label><input id="blog-featured-image" type="file" accept=".jpg,.jpeg,.png,.webp" onChange={(event) => { const nextFile = event.target.files?.[0]; setFile(nextFile || null); if (nextFile) setPreview(URL.createObjectURL(nextFile)); }} /></div>
-            {preview && <img className="blog-thumb" src={preview} alt="Featured preview" />}
+            {preview && (
+              <Image
+              className="blog-thumb"
+              src={preview}
+              alt="Featured preview"
+              width={400}
+              height={250}
+              unoptimized
+            />
+          )}
           </div>
           <div className="field"><label htmlFor="blog-content">Content</label><textarea id="blog-content" name="content" defaultValue={blog.content || ""} required /></div>
         </div>

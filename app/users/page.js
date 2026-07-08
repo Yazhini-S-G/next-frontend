@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import RequireAuth from "@/components/RequireAuth";
 import PageHeader from "@/components/PageHeader";
@@ -73,28 +73,27 @@ function Users({ currentUser }) {
 
   const canManageRoles = hasPermission(currentUser, "manage_roles");
 
-  async function load() {
-    const nextUsers = await api("/rbac/users");
-    setUsers(nextUsers);
+  const load = useCallback(async () => {
+  const nextUsers = await api("/rbac/users");
+  setUsers(nextUsers);
 
-    if (!canManageRoles) {
-      setRoles([]);
-      setPermissions([]);
-      return;
-    }
-
-    const [nextRoles, nextPermissions] = await Promise.all([
-      api("/rbac/roles"),
-      api("/rbac/permissions"),
-    ]);
-    setRoles(nextRoles);
-    setPermissions(nextPermissions);
+  if (!canManageRoles) {
+    setRoles([]);
+    setPermissions([]);
+    return;
   }
 
-  useEffect(() => {
-    load().catch((err) => setError(err.message));
-  }, []);
+  const [nextRoles, nextPermissions] = await Promise.all([
+    api("/rbac/roles"),
+    api("/rbac/permissions"),
+  ]);
 
+  setRoles(nextRoles);
+  setPermissions(nextPermissions);
+}, [canManageRoles]);
+ useEffect(() => {
+  load().catch((err) => setError(err.message));
+}, [load]);
   async function removeUser(id) {
     if (!confirm("Delete this user?")) return;
     await api(`/rbac/users/${id}`, { method: "DELETE" });
